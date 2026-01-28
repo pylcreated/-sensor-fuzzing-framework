@@ -1,0 +1,3 @@
+# Optional packet capture stack
+pyshark==0.6
+# Requires external tshark/wireshark installation and (on Windows) npcap driver.

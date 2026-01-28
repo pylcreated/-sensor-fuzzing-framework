@@ -1,0 +1,21 @@
+protocols:
+  mqtt:
+    host: localhost
+    port: 1883
+    version: 5.0
+sensors:
+  temperature:
+    range: [0, 100]
+    precision: 0.1
+    signal_type: digital
+strategy:
+  anomaly_types: [boundary, protocol_error]
+  concurrency: 10
+  ai_enabled: true
+  anomaly_contamination: 0.1
+  anomaly_threshold: 0.1
+sil_mapping:
+  SIL1:
+    coverage: 0.95
+  SIL4:
+    coverage: 0.99

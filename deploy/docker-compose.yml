@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  sensor-fuzz:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: production
+    ports:
+      - "8000:8000"  # Web dashboard
+      - "8080:8080"  # Metrics endpoint
+    volumes:
+      - ../config:/app/config:ro
+      - sensor-fuzz-data:/app/data
+      - sensor-fuzz-logs:/app/logs
+    environment:
+      - PYTHONPATH=/app/src
+      - SENSOR_FUZZ_CONFIG_PATH=/app/config
+      - PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.path.insert(0, 'src'); from sensor_fuzz.monitoring.collector import get_system_stats; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - sensor-fuzz-network
+
+  sensor-fuzz-dev:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: development
+    ports:
+      - "8001:8000"
+      - "8081:8080"
+    volumes:
+      - ..:/app
+      - /app/__pycache__
+    environment:
+      - PYTHONPATH=/app/src
+      - SENSOR_FUZZ_CONFIG_PATH=/app/config
+      - PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus
+    profiles:
+      - dev
+    networks:
+      - sensor-fuzz-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - sensor-fuzz-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    networks:
+      - sensor-fuzz-network
+
+volumes:
+  sensor-fuzz-data:
+  sensor-fuzz-logs:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  sensor-fuzz-network:
+    driver: bridge
