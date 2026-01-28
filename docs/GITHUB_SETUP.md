@@ -1,5 +1,9 @@
 # GitHub仓库创建指南
 
+> 工业传感器模糊测试框架 GitHub 仓库配置和最佳实践
+
+项目主页: [https://github.com/pylcreated/-sensor-fuzzing-framework](https://github.com/pylcreated/-sensor-fuzzing-framework)
+
 ## 📋 前置准备
 
 在创建GitHub仓库之前，请确保：
@@ -9,12 +13,12 @@
    - 初始提交已完成
    - .gitignore已配置
 
-2. **GitHub账户** 
+2. **GitHub账户**
    - 访问 https://github.com
    - 注册/登录账户
 
 3. **仓库信息规划**
-   - 仓库名称：`sensor-fuzzing-framework`
+   - 仓库名称：`-sensor-fuzzing-framework`
    - 描述：`Industrial Sensor Fuzzing Framework with IEC 61508 SIL Compliance`
    - 可见性：`Public` (开源) 或 `Private` (私有)
 

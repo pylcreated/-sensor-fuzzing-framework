@@ -180,6 +180,7 @@ class ConnectionObjectPool(ObjectPool[Any]):
             timeout=timeout,
             cleanup_interval=60.0
         )
+        self._cleanup_interval = 60.0
 
 
 class LogObjectPool(ObjectPool[dict]):
@@ -192,3 +193,4 @@ class LogObjectPool(ObjectPool[dict]):
             timeout=timeout,
             cleanup_interval=60.0
         )
+        self._cleanup_interval = 60.0

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### 🎯 Planned
+- 性能优化和内存管理改进
+- 更多协议驱动支持
+- 增强的AI模型集成
+
 ## [0.1.0] - 2026-01-28
 
 ### 🎉 Added
@@ -48,6 +55,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 📚 Documentation
 - 完整用户手册 (`docs/USER.md`)
 - 开发指南 (`docs/DEV.md`)
+- 部署手册 (`docs/DEPLOY.md`)
+- 配置参考 (`docs/CONFIG.md`)
+- 分发指南 (`docs/DISTRIBUTION.md`)
+- GitHub设置指南 (`docs/GITHUB_SETUP.md`)
+
+### 🔗 Links
+- [View changes](https://github.com/pylcreated/-sensor-fuzzing-framework/compare/v0.0.0...v0.1.0)
 - 部署文档 (`docs/DEPLOY.md`)
 - 配置参考 (`docs/CONFIG.md`)
 - GitHub设置指南 (`docs/GITHUB_SETUP.md`)

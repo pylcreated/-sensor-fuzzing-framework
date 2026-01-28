@@ -1,5 +1,9 @@
 # 用户手册
 
+> 工业传感器模糊测试框架使用指南
+
+项目主页: [https://github.com/pylcreated/-sensor-fuzzing-framework](https://github.com/pylcreated/-sensor-fuzzing-framework)
+
 ## 内存优化配置
 
 框架采用对象池技术优化内存使用，支持以下配置参数：

@@ -1,5 +1,9 @@
 # 配置手册
 
+> 工业传感器模糊测试框架配置参数详解
+
+项目主页: [https://github.com/pylcreated/-sensor-fuzzing-framework](https://github.com/pylcreated/-sensor-fuzzing-framework)
+
 ## 环境准备
 - Python 3.10+
 - 安装依赖：`pip install -r requirements.txt`

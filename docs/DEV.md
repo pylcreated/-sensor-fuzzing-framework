@@ -1,5 +1,9 @@
 # 开发手册
 
+> 工业传感器模糊测试框架开发指南
+
+项目主页: [https://github.com/pylcreated/-sensor-fuzzing-framework](https://github.com/pylcreated/-sensor-fuzzing-framework)
+
 ## 代码规范
 - flake8 / pylint 配置见仓库根目录。
 - 测试：`pytest -q`，覆盖率配置在 pytest.ini/.coveragerc。

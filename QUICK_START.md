@@ -4,6 +4,8 @@
 
 本框架是一个完整的工业级模糊测试解决方案，支持IEC 61508 SIL安全标准合规验证。
 
+项目地址: [https://github.com/pylcreated/-sensor-fuzzing-framework](https://github.com/pylcreated/-sensor-fuzzing-framework)
+
 ## 🚀 快速启动（推荐）
 
 ### Windows用户

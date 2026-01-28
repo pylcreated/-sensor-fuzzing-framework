@@ -17,7 +17,7 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 Set-StrictMode -Version Latest
 
 # 最佳实践：函数命名符合Verb-Noun规范
-function Normalize-RepositoryUrl {
+function Convert-RepositoryUrl {
     param([string]$Url)
     $trimmed = $Url.Trim()
     if (-not ($trimmed -match '^https?://')) {
@@ -34,7 +34,7 @@ function Main {
 
     try {
         # 核心修复：显式传参，避免跨作用域引用
-        $cleanUrl = Normalize-RepositoryUrl -Url $GitHubUrl
+        $cleanUrl = Convert-RepositoryUrl -Url $GitHubUrl
         Write-Host "Normalized URL: $cleanUrl" -ForegroundColor Yellow
 
         $issuesUrl = "$cleanUrl/issues"

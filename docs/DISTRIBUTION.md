@@ -1,24 +1,29 @@
 # 项目分发指南
 
+> 工业传感器模糊测试框架文件获取方式
+
+项目主页: [https://github.com/pylcreated/-sensor-fuzzing-framework](https://github.com/pylcreated/-sensor-fuzzing-framework)
+
 ## 📋 实际可用的获取方式
 
-由于这是一个本地开发项目，目前还没有公开的在线仓库，以下是其他用户获取文件的方式：
-
-### 💻 **方式1：直接文件传输（当前适用）**
+### 🌐 **方式1：Git 克隆（推荐）**
 
 ```bash
-# 从项目维护者处获取文件包
-# 1. 接收 sensor-fuzzing-framework.zip 文件
-# 2. 解压到本地目录
-unzip sensor-fuzzing-framework.zip
-cd sensor-fuzzing-framework
+# 从 GitHub 克隆最新代码
+git clone https://github.com/pylcreated/-sensor-fuzzing-framework.git
+cd -sensor-fuzzing-framework
 
-# 3. 安装和运行
+# 创建虚拟环境并安装
 python -m venv .venv
 .venv\Scripts\activate  # Windows
+# source .venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
+
+# 运行框架
 python -m sensor_fuzz
 ```
+
+### 💻 **方式2：直接文件传输（离线场景）**
 
 ### 🐳 **方式2：Docker镜像分发**
 

@@ -1,5 +1,9 @@
 # 部署手册
 
+> 工业传感器模糊测试框架部署配置说明
+
+项目主页: [https://github.com/pylcreated/-sensor-fuzzing-framework](https://github.com/pylcreated/-sensor-fuzzing-framework)
+
 ## Docker 本地
 ```bash
 bash deploy/scripts/deploy_linux.sh  # Windows 用 PowerShell 运行 deploy_windows.ps1

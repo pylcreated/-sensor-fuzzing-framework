@@ -138,7 +138,7 @@ class ExecutionEngine:
             else:
                 raise ValueError(f"Unsupported protocol: {proto}")
 
-            self._connection_pools[p] = ConnectionObjectPool(factory, max_size=20, timeout=300.0, cleanup_interval=60.0)
+            self._connection_pools[p] = ConnectionObjectPool(factory, max_size=20, timeout=300.0)
 
         # Acquire connection from pool
         return self._connection_pools[p].acquire()
