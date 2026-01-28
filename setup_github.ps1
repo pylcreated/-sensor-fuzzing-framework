@@ -1,74 +1,75 @@
-# GitHub仓库快速设置脚本 (PowerShell)
-# 使用前请先创建GitHub仓库并获取URL
+#requires -Version 5.1
+# GitHub repository config script (PowerShell)
+# Generates github_config.ini for SIL-compliance sensor fuzzing framework
+# Version: 1.2 (Fully fixed)
+# Author: Industrial sensor fuzzing framework team
 
+# 核心修复：param块放在脚本最顶部，确保参数绑定
 param(
-    [Parameter(Mandatory=$true)]
-    [string]$GitHubUrl,
-
-    [Parameter(Mandatory=$false)]
-    [string]$BranchName = "main"
+    [Parameter(Mandatory=$true, HelpMessage="GitHub repository URL, with or without .git suffix")]
+    [ValidateNotNullOrEmpty()]
+    [string]$GitHubUrl
 )
 
-Write-Host "🚀 GitHub仓库连接设置" -ForegroundColor Green
-Write-Host "============================" -ForegroundColor Green
+# Force UTF-8 output to avoid mojibake (removed non-ASCII)
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+Set-StrictMode -Version Latest
 
-# 检查Git状态
-Write-Host "📋 检查Git状态..." -ForegroundColor Yellow
-$gitStatus = git status --porcelain
-if ($gitStatus) {
-    Write-Host "⚠️ 工作区有未提交的更改，请先提交或暂存" -ForegroundColor Yellow
-    Write-Host $gitStatus
-    exit 1
+# 最佳实践：函数命名符合Verb-Noun规范
+function Normalize-RepositoryUrl {
+    param([string]$Url)
+    $trimmed = $Url.Trim()
+    if (-not ($trimmed -match '^https?://')) {
+        throw "URL must start with http:// or https://"
+    }
+    # Remove trailing .git then any trailing slash
+    $noGit = $trimmed -replace '\.git$', ''
+    return $noGit.TrimEnd('/')
 }
 
-# 添加远程仓库
-Write-Host "🔗 添加远程仓库..." -ForegroundColor Yellow
-try {
-    git remote add origin $GitHubUrl
-    Write-Host "✅ 远程仓库已添加" -ForegroundColor Green
-} catch {
-    Write-Host "ℹ️ 远程仓库已存在，更新URL..." -ForegroundColor Yellow
-    git remote set-url origin $GitHubUrl
+function Main {
+    Write-Host "GitHub repository configuration" -ForegroundColor Green
+    Write-Host "================================" -ForegroundColor Green
+
+    try {
+        # 核心修复：显式传参，避免跨作用域引用
+        $cleanUrl = Normalize-RepositoryUrl -Url $GitHubUrl
+        Write-Host "Normalized URL: $cleanUrl" -ForegroundColor Yellow
+
+        $issuesUrl = "$cleanUrl/issues"
+        Write-Host "Issues URL: $issuesUrl" -ForegroundColor Yellow
+
+        Write-Host "Writing config file..." -ForegroundColor Yellow
+        $configContent = @"
+[GitHub]
+RepositoryUrl=$cleanUrl
+IssuesUrl=$issuesUrl
+ConfiguredAt=$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
+Framework=Industrial sensor fuzzing framework
+Compliance=SIL compliance validation
+"@
+
+        # 最佳实践：使用Join-Path拼接路径，指定UTF-8编码
+        $configPath = Join-Path -Path $PSScriptRoot -ChildPath "github_config.ini"
+        $configContent | Out-File -FilePath $configPath -Encoding UTF8 -Force -ErrorAction Stop
+        Write-Host "Config file written: github_config.ini" -ForegroundColor Green
+
+    } catch {
+        # 完善异常处理：清晰错误提示
+        Write-Host "Configuration failed: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Check URL format and file write permissions." -ForegroundColor Red
+        exit 1
+    } finally {
+        # 完善异常处理：finally块收尾
+        Write-Host "Configuration process completed." -ForegroundColor Cyan
+    }
+
+    Write-Host "" -ForegroundColor White
+    Write-Host "Summary:" -ForegroundColor Cyan
+    Write-Host "Repository URL: $cleanUrl" -ForegroundColor White
+    Write-Host "Issues URL: $issuesUrl" -ForegroundColor White
+    Write-Host "Config file: github_config.ini" -ForegroundColor White
 }
 
-# 重命名分支（如果需要）
-$currentBranch = git branch --show-current
-if ($currentBranch -ne $BranchName) {
-    Write-Host "🔄 重命名分支为 $BranchName..." -ForegroundColor Yellow
-    git branch -M $BranchName
-}
-
-# 推送代码
-Write-Host "📤 推送代码到GitHub..." -ForegroundColor Yellow
-try {
-    git push -u origin $BranchName
-    Write-Host "✅ 代码推送成功!" -ForegroundColor Green
-} catch {
-    Write-Host "❌ 推送失败: $_" -ForegroundColor Red
-    Write-Host "请检查："
-    Write-Host "1. GitHub URL是否正确"
-    Write-Host "2. 是否有推送权限"
-    Write-Host "3. 网络连接是否正常"
-    exit 1
-}
-
-# 创建初始标签
-Write-Host "🏷️ 创建初始标签..." -ForegroundColor Yellow
-git tag v0.1.0
-git push origin v0.1.0
-
-Write-Host "" -ForegroundColor White
-Write-Host "🎉 GitHub仓库设置完成!" -ForegroundColor Green
-Write-Host "" -ForegroundColor White
-Write-Host "📋 后续步骤：" -ForegroundColor Cyan
-Write-Host "1. 访问: $GitHubUrl" -ForegroundColor White
-Write-Host "2. 在仓库设置中启用GitHub Pages" -ForegroundColor White
-Write-Host "3. 添加仓库描述和话题标签" -ForegroundColor White
-Write-Host "4. 启用Issues和Discussions" -ForegroundColor White
-Write-Host "5. 查看 docs/GITHUB_SETUP.md 获取详细配置指南" -ForegroundColor White
-Write-Host "" -ForegroundColor White
-Write-Host "🔗 重要链接：" -ForegroundColor Yellow
-Write-Host "仓库地址: $GitHubUrl" -ForegroundColor White
-Write-Host "发布页面: $($GitHubUrl -replace '\.git$', '/releases')" -ForegroundColor White
-Write-Host "问题跟踪: $($GitHubUrl -replace '\.git$', '/issues')" -ForegroundColor White</content>
-<parameter name="filePath">C:\Users\31601\Desktop\学年论文2\setup_github.ps1
+Main

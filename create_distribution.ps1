@@ -7,20 +7,20 @@ param(
     [switch]$SkipBuild
 )
 
-Write-Host "📦 创建项目分发包" -ForegroundColor Green
-Write-Host "===================" -ForegroundColor Green
+Write-Host "Create distribution package" -ForegroundColor Green
+Write-Host "===========================" -ForegroundColor Green
 
 # Create timestamp for version
 $Timestamp = Get-Date -Format "yyyyMMdd"
 $DistName = "sensor-fuzzing-framework-$Timestamp"
 
-Write-Host "📁 创建目录: $DistName" -ForegroundColor Yellow
+Write-Host "Create directory: $DistName" -ForegroundColor Yellow
 
 # Create distribution directory
 New-Item -ItemType Directory -Path $DistName -Force | Out-Null
 
 # Copy essential files and directories
-Write-Host "📋 复制项目文件..." -ForegroundColor Yellow
+Write-Host "Copy project files..." -ForegroundColor Yellow
 
 # Core source code
 Copy-Item -Path "src" -Destination "$DistName\" -Recurse -Force
@@ -56,7 +56,7 @@ if (Test-Path ".github") {
 
 # Build wheel package
 if (-not $SkipBuild) {
-    Write-Host "🔨 构建Python包..." -ForegroundColor Yellow
+    Write-Host "Build Python wheel..." -ForegroundColor Yellow
     try {
         & python -m pip install --upgrade build
         & python -m build --wheel
@@ -64,82 +64,71 @@ if (-not $SkipBuild) {
             Copy-Item -Path "dist\*.whl" -Destination "$DistName\" -Force
         }
     } catch {
-        Write-Host "⚠️  Wheel构建失败，跳过: $_" -ForegroundColor Yellow
+        Write-Host "Wheel build failed, skipping: $_" -ForegroundColor Yellow
     }
 }
 
 # Create usage instructions
 $QuickStartContent = @"
-# 快速开始指南
+# Quick Start Guide
 
-## Windows用户
+## Windows
 ```powershell
-# 运行PowerShell脚本
-.\setup_and_run.ps1
+./setup_and_run.ps1 -ZipFile <path-to-zip>
 ```
 
-## Linux/macOS用户
+## Linux/macOS
 ```bash
-# 运行Bash脚本
 chmod +x setup_and_run.sh
-./setup_and_run.sh
+./setup_and_run.sh -z <path-to-zip>
 ```
 
-## 手动安装
+## Manual install
 ```bash
-# 1. 创建虚拟环境
 python -m venv .venv
 source .venv/bin/activate  # Linux/macOS
-# 或: .venv\Scripts\activate  # Windows
-
-# 2. 安装依赖
+# or: .venv\Scripts\activate  # Windows
 pip install -r requirements.txt
-
-# 3. 运行框架
 python -m sensor_fuzz
 ```
 
-## 验证安装
+## Validate install
 ```bash
-# 测试导入
 python -c "import sensor_fuzz; print('OK')"
-
-# 运行SIL合规测试
-python sil_compliance_test.py
 ```
 
-## 访问界面
-- Web界面: http://localhost:8000
-- 监控面板: http://localhost:8080
+## Access
+- Web UI: http://localhost:8000
+- Monitoring: http://localhost:8080
 
-## 故障排除
-- 如果遇到权限错误，请以管理员身份运行
-- 如果Python版本不兼容，请使用Python 3.10+
-- 如果端口被占用，请修改配置文件中的端口设置
+## Troubleshooting
+- Run as administrator if permission errors occur
+- Use Python 3.10+ if version issues appear
+- Change ports in config if already in use
 "@
 
 $QuickStartContent | Out-File -FilePath "$DistName\QUICK_START.md" -Encoding UTF8
 
 # Create zip archive
-Write-Host "📦 创建压缩包..." -ForegroundColor Yellow
+Write-Host "Create zip archive..." -ForegroundColor Yellow
 Compress-Archive -Path $DistName -DestinationPath "$DistName.zip" -Force
 
 # Get file size
 $FileSize = (Get-Item "$DistName.zip").Length / 1MB
 $FileSizeFormatted = "{0:N2} MB" -f $FileSize
 
-Write-Host "✅ 分发包创建完成!" -ForegroundColor Green
-Write-Host "📁 包位置: $DistName.zip" -ForegroundColor Cyan
-Write-Host "📊 包大小: $FileSizeFormatted" -ForegroundColor Cyan
+Write-Host "Distribution package created." -ForegroundColor Green
+Write-Host "Archive: $DistName.zip" -ForegroundColor Cyan
+Write-Host "Size: $FileSizeFormatted" -ForegroundColor Cyan
 
 # Cleanup
 Remove-Item -Path $DistName -Recurse -Force
 
 Write-Host "" -ForegroundColor White
-Write-Host "🎯 分发说明:" -ForegroundColor Green
-Write-Host "1. 将 $DistName.zip 发送给其他用户" -ForegroundColor White
-Write-Host "2. 用户解压后运行相应平台的setup脚本" -ForegroundColor White
-Write-Host "3. 或参考 QUICK_START.md 进行手动安装" -ForegroundColor White
+Write-Host "Notes:" -ForegroundColor Green
+Write-Host "1. Share $DistName.zip with users" -ForegroundColor White
+Write-Host "2. Users unzip and run the platform-specific setup script" -ForegroundColor White
+Write-Host "3. Alternatively follow QUICK_START.md for manual install" -ForegroundColor White
 Write-Host "" -ForegroundColor White
-Write-Host "📧 联系方式: 请将此包通过邮件或文件共享方式分发" -ForegroundColor Yellow</content>
+Write-Host "Distribute via email or file sharing as needed" -ForegroundColor Yellow
 <parameter name="filePath">C:\Users\31601\Desktop\学年论文2\create_distribution.ps1

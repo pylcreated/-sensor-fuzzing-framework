@@ -12,11 +12,11 @@ requires-python = ">=3.10"
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/your-org/sensor-fuzzing-framework"
-Repository = "https://github.com/your-org/sensor-fuzzing-framework.git"
+Homepage = "https://github.com/pylcreated/-sensor-fuzzing-framework"
+Repository = "https://github.com/pylcreated/-sensor-fuzzing-framework.git"
 Documentation = "https://sensor-fuzz-framework.readthedocs.io/"
-Issues = "https://github.com/your-org/sensor-fuzzing-framework/issues"
-Changelog = "https://github.com/your-org/sensor-fuzzing-framework/blob/main/CHANGELOG.md"
+Issues = "https://github.com/pylcreated/-sensor-fuzzing-framework/issues"
+Changelog = "https://github.com/pylcreated/-sensor-fuzzing-framework/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
