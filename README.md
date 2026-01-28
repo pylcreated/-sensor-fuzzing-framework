@@ -8,8 +8,8 @@
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/your-org/sensor-fuzzing-framework.git
-cd sensor-fuzzing-framework
+git clone https://github.com/pylcreated/-sensor-fuzzing-framework.git
+cd -sensor-fuzzing-framework
 
 # 2. 创建虚拟环境
 python -m venv .venv
@@ -53,7 +53,7 @@ pip install sensor_fuzz_framework-0.1.0-py3-none-any.whl
 # Windows PowerShell
 .\setup_and_run.ps1 -ZipFile "sensor-fuzzing-framework.zip"
 
-# 或下载最新分发包: sensor-fuzzing-framework-20260128-updated.zip
+# 或下载最新分发包: https://github.com/pylcreated/-sensor-fuzzing-framework/releases
 ```
 
 ## 📖 详细文档
