@@ -204,6 +204,7 @@ class SILComplianceValidator:
     """SIL合规性验证器"""
 
     def __init__(self):
+        """方法说明：执行   init   相关逻辑。"""
         self.logger = logging.getLogger(__name__)
 
     async def validate_sil_compliance(
@@ -494,6 +495,7 @@ class SILComplianceManager:
     """SIL合规性管理器"""
 
     def __init__(self):
+        """方法说明：执行   init   相关逻辑。"""
         self.validator = SILComplianceValidator()
         self.logger = logging.getLogger(__name__)
 

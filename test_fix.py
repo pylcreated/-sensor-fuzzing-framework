@@ -11,7 +11,7 @@ def test_f_string_formatting():
     result2 = f"  耗时: {time_val:.2f}秒"
     result3 = f"  生成速率: {count/time_val:.2f} 用例/秒"
 
-    print("✅ F-string formatting test passed!")
+    print(" F-string formatting test passed!")
     print(f"Result1: {result1}")
     print(f"Result2: {result2}")
     print(f"Result3: {result3}")
@@ -20,4 +20,4 @@ def test_f_string_formatting():
 
 if __name__ == "__main__":
     test_f_string_formatting()
-    print("🎉 genetic_performance_test.py 修复验证完成!")
+    print(" genetic_performance_test.py 修复验证完成!")

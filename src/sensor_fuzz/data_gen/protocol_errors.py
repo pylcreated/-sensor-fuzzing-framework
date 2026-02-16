@@ -33,6 +33,7 @@ def _generate_protocol_errors_cached(
     crc_mask, crc_xor = crc_flip if crc_flip is not None else (None, None)
 
     def add_crc(desc: str = "crc-broken") -> None:
+        """方法说明：执行 add crc 相关逻辑。"""
         if crc_mask is None:
             return
         errors.append(
@@ -40,6 +41,7 @@ def _generate_protocol_errors_cached(
         )
 
     def add_offset(offset: int, field: str | None = None) -> None:
+        """方法说明：执行 add offset 相关逻辑。"""
         entry: Dict[str, Any] = {"desc": "field-offset", "offset": offset}
         if field:
             entry["field"] = field

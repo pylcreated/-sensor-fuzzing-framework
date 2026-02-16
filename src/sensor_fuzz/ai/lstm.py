@@ -25,14 +25,7 @@ except (
 
 
 def _require_torch() -> None:
-    if torch is None:
-        raise ImportError(
-            "torch is required for LSTM-based anomaly prediction; "
-            "install optional AI extras"
-        )
-
-
-def _require_torch() -> None:
+    """方法说明：执行  require torch 相关逻辑。"""
     if torch is None:
         raise ImportError(
             "torch is required for LSTM-based anomaly prediction; "
@@ -41,6 +34,7 @@ def _require_torch() -> None:
 
 
 class LSTMAnomaly(nn.Module if torch else object):  # type: ignore[misc]
+    """类说明：封装 LSTMAnomaly 的相关行为。"""
     def __init__(
         self,
         input_dim: int = 4,
@@ -49,6 +43,7 @@ class LSTMAnomaly(nn.Module if torch else object):  # type: ignore[misc]
         dropout: float = 0.2,
         bidirectional: bool = True
     ):
+        """方法说明：执行   init   相关逻辑。"""
         _require_torch()
         super().__init__()
         self.input_dim = input_dim
@@ -73,15 +68,16 @@ class LSTMAnomaly(nn.Module if torch else object):  # type: ignore[misc]
         # Enhanced classifier with multiple layers and regularization
         self.classifier = nn.Sequential(
             nn.Linear(lstm_output_dim, hidden_dim),
-            nn.BatchNorm1d(hidden_dim),
+            nn.LayerNorm(hidden_dim),
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(hidden_dim, hidden_dim // 2),
-            nn.BatchNorm1d(hidden_dim // 2),
+            nn.LayerNorm(hidden_dim // 2),
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(hidden_dim // 2, 1)
         )
+        self.fc = self.classifier
 
         # Initialize weights for better convergence
         self._initialize_weights()
@@ -99,6 +95,7 @@ class LSTMAnomaly(nn.Module if torch else object):  # type: ignore[misc]
 
     def forward(self, x):
         # Handle both single timestep and sequence inputs
+        """方法说明：执行 forward 相关逻辑。"""
         if x.dim() == 2:  # (batch_size, input_dim) -> add sequence dimension
             x = x.unsqueeze(1)  # (batch_size, 1, input_dim)
 
@@ -150,7 +147,12 @@ def train_lstm(
     scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=5)
 
     # Loss function with class weights for imbalanced data
-    pos_weight = torch.tensor([len(labels) / (2 * labels.sum())])  # Balance classes
+    positive_count = float(labels.sum())
+    negative_count = float(len(labels) - positive_count)
+    if positive_count <= 0 or negative_count <= 0:
+        pos_weight = torch.tensor([1.0])
+    else:
+        pos_weight = torch.tensor([negative_count / positive_count])
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
     # Early stopping
@@ -164,7 +166,7 @@ def train_lstm(
         train_loss = 0.0
         for xb, yb in train_loader:
             optimizer.zero_grad()
-            logits = model(xb).squeeze()
+            logits = model(xb).squeeze(-1)
             loss = criterion(logits, yb)
             loss.backward()
 
@@ -180,7 +182,7 @@ def train_lstm(
         val_labels = []
         with torch.no_grad():
             for xb, yb in val_loader:
-                logits = model(xb).squeeze()
+                logits = model(xb).squeeze(-1)
                 preds = torch.sigmoid(logits)
                 val_preds.extend(preds.cpu().numpy())
                 val_labels.extend(yb.cpu().numpy())
@@ -217,6 +219,7 @@ def train_lstm(
 
 
 def predict(model: LSTMAnomaly, series: np.ndarray) -> np.ndarray:
+    """方法说明：执行 predict 相关逻辑。"""
     _require_torch()
     model.eval()
     with torch.no_grad():

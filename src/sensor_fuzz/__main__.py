@@ -20,6 +20,7 @@ class ApplicationError(Exception):
     """Application-specific error with exit code."""
 
     def __init__(self, message: str, exit_code: int = 1):
+        """方法说明：执行   init   相关逻辑。"""
         super().__init__(message)
         self.exit_code = exit_code
 
@@ -28,6 +29,7 @@ def setup_signal_handlers() -> None:
     """Setup signal handlers for graceful shutdown."""
 
     def signal_handler(signum, frame):
+        """方法说明：执行 signal handler 相关逻辑。"""
         logger = logging.getLogger(__name__)
         logger.info(f"Received signal {signum}, initiating graceful shutdown...")
         sys.exit(0)
@@ -89,6 +91,13 @@ def main() -> NoReturn:
             loader = ConfigLoader()
             cfg = loader.load(config_file)
             logger.info("Configuration loaded successfully")
+
+            try:
+                version_store = ConfigVersionStore()
+                version_store.save("startup", cfg)
+                logger.info("Configuration version snapshot saved")
+            except Exception as e:
+                logger.warning(f"Failed to save configuration version: {e}")
         except Exception as e:
             logger.error(f"Failed to load configuration: {e}")
             raise ApplicationError(f"Configuration loading failed: {e}", 3)
@@ -122,6 +131,7 @@ def main() -> NoReturn:
 
         # Setup configuration reloader
         def _on_reload(snapshot):
+            """方法说明：执行  on reload 相关逻辑。"""
             try:
                 # Apply new config to engine
                 engine.state["config_reload"] = snapshot.to_dict()
@@ -178,6 +188,7 @@ def main() -> NoReturn:
 
                     # Run SIL compliance validation in async context
                     async def run_sil_validation():
+                        """异步方法说明：执行 run sil validation 相关流程。"""
                         compliance_report = await sil_manager.generate_compliance_report(
                             sil_level, test_results, system_config
                         )

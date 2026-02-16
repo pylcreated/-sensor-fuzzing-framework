@@ -13,6 +13,7 @@ LEVELS = {
 
 
 def classify(defect: Dict) -> str:
+    """方法说明：执行 classify 相关逻辑。"""
     category = defect.get("category", "")
     if category == "safety" or defect.get("deadlock"):
         return "critical"

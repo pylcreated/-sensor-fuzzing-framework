@@ -4,6 +4,7 @@
 from sensor_fuzz.data_gen.genetic_rl import TestCase, GeneticGenerator
 
 def test_basic_genetic():
+    """方法说明：执行 test basic genetic 相关逻辑。"""
     print("Testing basic genetic algorithm functionality...")
 
     # Create test data

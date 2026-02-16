@@ -16,13 +16,17 @@ try:
 except Exception:  # pragma: no cover
 
     class _Dummy:
+        """类说明：封装  Dummy 的相关行为。"""
         def __init__(self, *_, **__):
+            """方法说明：执行   init   相关逻辑。"""
             self._value = 0
 
         def set(self, v):
+            """方法说明：执行 set 相关逻辑。"""
             self._value = v
 
         def _get(self):
+            """方法说明：执行  get 相关逻辑。"""
             return self._value
 
     Gauge = _Dummy  # type: ignore
@@ -40,6 +44,7 @@ class SystemMonitor:
     """Enhanced system monitoring with historical data."""
 
     def __init__(self, collection_interval: float = 5.0):
+        """方法说明：执行   init   相关逻辑。"""
         self.collection_interval = collection_interval
         self._running = False
         self._thread: Optional[threading.Thread] = None

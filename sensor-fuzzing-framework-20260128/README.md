@@ -2,9 +2,9 @@
 
 > 从 0 到 1 的工业级模糊测试框架骨架，覆盖配置管理、数据生成、执行引擎、监控反馈、结果分析、分布式调度与安全防护。
 
-## 📦 获取方式
+##  获取方式
 
-### 🚀 快速开始（推荐）
+###  快速开始（推荐）
 
 ```bash
 # 1. 克隆项目
@@ -23,7 +23,7 @@ pip install -r requirements.txt
 python -m sensor_fuzz
 ```
 
-### 🐳 Docker部署
+###  Docker部署
 
 ```bash
 # 使用Docker Compose一键部署
@@ -33,7 +33,7 @@ docker-compose -f deploy/docker-compose.yml up -d
 # 监控面板: http://localhost:8080
 ```
 
-### 📦 Python包安装
+###  Python包安装
 
 ```bash
 # 从源码安装（当前适用）
@@ -43,7 +43,7 @@ pip install -e .
 pip install sensor_fuzz_framework-0.1.0-py3-none-any.whl
 ```
 
-### 📁 文件包分发
+###  文件包分发
 
 ```bash
 # 使用快速部署脚本（推荐）
@@ -54,7 +54,7 @@ pip install sensor_fuzz_framework-0.1.0-py3-none-any.whl
 .\setup_and_run.ps1 -ZipFile "sensor-fuzzing-framework.zip"
 ```
 
-## 📖 详细文档
+##  详细文档
 
 - [用户手册](docs/USER.md) - 功能使用指南
 - [开发手册](docs/DEV.md) - 代码开发规范

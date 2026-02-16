@@ -12,6 +12,7 @@ from sensor_fuzz.data_gen.precheck import sensor_config_safe
 
 @dataclass
 class BoundaryCase:
+    """类说明：封装 BoundaryCase 的相关行为。"""
     value: float
     desc: str
 

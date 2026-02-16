@@ -6,20 +6,20 @@ This directory contains Docker configuration and deployment scripts for the Sens
 
 ```
 deploy/
-├── Dockerfile                    # Multi-stage Docker build configuration
-├── docker-compose.yml           # Docker Compose orchestration
-├── prometheus.yml              # Prometheus monitoring configuration
-├── grafana/                    # Grafana dashboard configurations
-│   └── provisioning/
-│       ├── datasources/        # Data source configurations
-│       └── dashboards/         # Dashboard configurations
-├── k8s/                        # Kubernetes deployment manifests
-└── scripts/                    # Deployment automation scripts
-    ├── deploy_docker.sh        # Docker deployment script
-    ├── deploy_k8s.sh          # Kubernetes deployment script
-    ├── deploy_linux.sh        # Linux native deployment
-    ├── deploy_windows.ps1     # Windows native deployment
-    └── install_deps_linux.sh  # Linux dependency installation
+|-- Dockerfile                    # Multi-stage Docker build configuration
+|-- docker-compose.yml           # Docker Compose orchestration
+|-- prometheus.yml              # Prometheus monitoring configuration
+|-- grafana/                    # Grafana dashboard configurations
+|   `-- provisioning/
+|       |-- datasources/        # Data source configurations
+|       `-- dashboards/         # Dashboard configurations
+|-- k8s/                        # Kubernetes deployment manifests
+`-- scripts/                    # Deployment automation scripts
+   |-- deploy_docker.sh        # Docker deployment script
+   |-- deploy_k8s.sh          # Kubernetes deployment script
+   |-- deploy_linux.sh        # Linux native deployment
+   |-- deploy_windows.ps1     # Windows native deployment
+   `-- install_deps_linux.sh  # Linux dependency installation
 ```
 
 ## Quick Start

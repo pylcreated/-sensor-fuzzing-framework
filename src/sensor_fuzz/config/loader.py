@@ -30,6 +30,7 @@ class ConfigLoader:
     """Load and validate configuration files (YAML/JSON)."""
 
     def __init__(self, schema: Optional[Dict[str, Any]] = None) -> None:
+        """方法说明：执行   init   相关逻辑。"""
         self._schema = schema or DEFAULT_SCHEMA
 
     def load(self, path: str | Path) -> FrameworkConfig:
@@ -85,6 +86,7 @@ class ConfigLoader:
         )
 
     def dump(self, config: FrameworkConfig, path: str | Path) -> None:
+        """方法说明：执行 dump 相关逻辑。"""
         payload = {
             "protocols": config.protocols,
             "sensors": config.sensors,
@@ -113,6 +115,7 @@ class ConfigLoader:
 
     @staticmethod
     def _validate_sil_mapping(sil_mapping: Dict[str, Any]) -> None:
+        """方法说明：执行  validate sil mapping 相关逻辑。"""
         for level, cfg in sil_mapping.items():
             if not level.startswith("SIL"):
                 raise ValueError(f"Invalid SIL level key: {level}")
@@ -129,6 +132,7 @@ class ConfigLoader:
     @staticmethod
     def _validate_protocols(protocols: Dict[str, Any]) -> None:
         # Ensure restartless switch flags are boolean when provided
+        """方法说明：执行  validate protocols 相关逻辑。"""
         for name in ("profinet", "i2c", "spi"):
             cfg = protocols.get(name)
             if cfg is None:
@@ -158,6 +162,7 @@ class ConfigLoader:
 
     @staticmethod
     def _validate_sensors(sensors: Dict[str, Any], protocols: Dict[str, Any]) -> None:
+        """方法说明：执行  validate sensors 相关逻辑。"""
         for name, cfg in sensors.items():
             protocol = cfg.get("protocol")
             if protocol and protocol not in protocols:
@@ -176,11 +181,13 @@ class ConfigSnapshot:
     """Serializable snapshot of configuration with metadata."""
 
     def __init__(self, config: FrameworkConfig, path: Path) -> None:
+        """方法说明：执行   init   相关逻辑。"""
         self.config = config
         self.path = path
         self.loaded_at = datetime.now(timezone.utc)
 
     def to_dict(self) -> Dict[str, Any]:
+        """方法说明：执行 to dict 相关逻辑。"""
         return {
             "path": str(self.path),
             "loaded_at": self.loaded_at.isoformat() + "Z",

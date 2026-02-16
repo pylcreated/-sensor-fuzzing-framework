@@ -1,3 +1,5 @@
+"""模块说明：tests/test_analysis.py 的主要实现与辅助逻辑。"""
+
 from sensor_fuzz.analysis.cluster import cluster_anomalies, label_defects
 from sensor_fuzz.analysis.severity import classify
 from sensor_fuzz.analysis.report import render_html, export_pdf
@@ -6,22 +8,26 @@ import pytest
 
 
 def test_cluster_and_label():
+    """方法说明：执行 test cluster and label 相关逻辑。"""
     labels, model = cluster_anomalies([[0, 0], [0.1, 0.1], [10, 10]], eps=0.5, min_samples=1)
     mapping = label_defects(labels)
     assert -1 in mapping or 0 in mapping
 
 
 def test_severity_classify():
+    """方法说明：执行 test severity classify 相关逻辑。"""
     assert classify({"deadlock": True}) == "critical"
     assert classify({"crash": True}) == "severe"
 
 
 def test_render_html():
+    """方法说明：执行 test render html 相关逻辑。"""
     html = render_html({"summary": "ok", "stats": {"test_cases": 1, "anomalies": 0, "false_positives": 0}, "findings": []})
     assert "Sensor Fuzz Test Report" in html
 
 
 def test_export_pdf_optional(monkeypatch):
+    """方法说明：执行 test export pdf optional 相关逻辑。"""
     import sensor_fuzz.analysis.report as report
 
     monkeypatch.setattr(report, "HTML", None)

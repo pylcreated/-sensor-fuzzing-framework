@@ -21,6 +21,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
     """Web dashboard handler for real-time monitoring."""
 
     def __init__(self, *args, dashboard_data=None, **kwargs):
+        """方法说明：执行   init   相关逻辑。"""
         self.dashboard_data = dashboard_data or {}
         super().__init__(*args, **kwargs)
 
@@ -310,6 +311,7 @@ class EnhancedMetricsExporter:
         dashboard_port: int = 8080,
         dashboard_host: str = "localhost"
     ):
+        """方法说明：执行   init   相关逻辑。"""
         self.port = port
         self.dashboard_port = dashboard_port
         self.dashboard_host = dashboard_host
@@ -328,7 +330,9 @@ class EnhancedMetricsExporter:
 
         # Start dashboard server
         def run_dashboard():
+            """方法说明：执行 run dashboard 相关逻辑。"""
             def handler_class(*args, **kwargs):
+                """方法说明：执行 handler class 相关逻辑。"""
                 return DashboardHandler(
                     *args, dashboard_data=self.dashboard_data, **kwargs
                 )

@@ -9,6 +9,7 @@ from typing import List
 
 @dataclass
 class TestCase:
+    """类说明：封装 TestCase 的相关行为。"""
     payload: dict
     fitness: float = 0.0
 
@@ -16,6 +17,7 @@ class TestCase:
 def genetic_generate(
     seed_cases: List[TestCase], population: int = 10, generations: int = 3
 ) -> List[TestCase]:
+    """方法说明：执行 genetic generate 相关逻辑。"""
     pop = seed_cases[:]
     for _ in range(generations):
         pop = sorted(pop, key=lambda c: c.fitness, reverse=True)
@@ -33,4 +35,5 @@ def genetic_generate(
 
 
 def rl_score(case: TestCase, reward: float) -> None:
+    """方法说明：执行 rl score 相关逻辑。"""
     case.fitness = 0.8 * case.fitness + 0.2 * reward

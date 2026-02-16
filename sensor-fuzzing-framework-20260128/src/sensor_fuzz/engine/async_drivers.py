@@ -33,6 +33,7 @@ class AsyncDriver:
     """Base class for asynchronous protocol drivers."""
 
     def __init__(self, **kwargs):
+        """方法说明：执行   init   相关逻辑。"""
         self.connected = False
         self._connection_lock = asyncio.Lock()
 
@@ -322,6 +323,7 @@ class AsyncDriverPool:
     """Connection pool for async drivers to reuse connections."""
 
     def __init__(self, max_connections: int = 10):
+        """方法说明：执行   init   相关逻辑。"""
         self.max_connections = max_connections
         self._pool: Dict[str, list] = {}
         self._lock = asyncio.Lock()

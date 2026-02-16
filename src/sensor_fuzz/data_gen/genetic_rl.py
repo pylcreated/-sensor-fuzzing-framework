@@ -19,6 +19,7 @@ from sensor_fuzz.ai.lstm import AnomalyDetector
 @dataclass
 class TestCase:
     """Represents a test case with genetic properties."""
+    __test__ = False
     sensor_config: Dict[str, Any]
     protocol: str
     mutations: List[Dict[str, Any]] = field(default_factory=list)
@@ -64,6 +65,7 @@ class GeneticGenerator:
         elitism_rate: float = 0.1,
         max_generations: int = 50,
     ):
+        """方法说明：执行   init   相关逻辑。"""
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
@@ -147,8 +149,12 @@ class GeneticGenerator:
         relevant_results = [
             r for r in execution_results
             if r.get("protocol") == test_case.protocol and
-            any(m in str(r.get("mutations", [])) for m in test_case.mutations)
+            any(str(m) in str(r.get("mutations", [])) for m in test_case.mutations)
         ]
+        if not relevant_results:
+            relevant_results = [
+                r for r in execution_results if r.get("protocol") == test_case.protocol
+            ]
         if not relevant_results:
             return 0.0
 
@@ -197,7 +203,20 @@ class GeneticGenerator:
     def crossover(self, parent1: TestCase, parent2: TestCase) -> Tuple[TestCase, TestCase]:
         """Perform crossover between two parents."""
         if random.random() > self.crossover_rate:
-            return parent1, parent2
+            return (
+                TestCase(
+                    sensor_config=parent1.sensor_config,
+                    protocol=parent1.protocol,
+                    mutations=parent1.mutations.copy(),
+                    generation=self.generation + 1,
+                ),
+                TestCase(
+                    sensor_config=parent2.sensor_config,
+                    protocol=parent2.protocol,
+                    mutations=parent2.mutations.copy(),
+                    generation=self.generation + 1,
+                ),
+            )
 
         # Single point crossover for mutations
         if parent1.mutations and parent2.mutations:
@@ -329,6 +348,7 @@ class RLScorer:
     """Reinforcement learning-based test case scoring."""
 
     def __init__(self, learning_rate: float = 0.01, discount_factor: float = 0.9):
+        """方法说明：执行   init   相关逻辑。"""
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.q_table: Dict[str, Dict[str, float]] = {}
@@ -347,7 +367,7 @@ class RLScorer:
 
     def get_actions(self, state: str) -> List[str]:
         """Get available actions for a state."""
-        return ["keep", "mutate", "discard", "prioritize"]
+        return ["keep", "mutate", "discard", "prioritize", "evaluate"]
 
     def choose_action(self, state: str, epsilon: float = 0.1) -> str:
         """Choose action using epsilon-greedy policy."""
@@ -396,7 +416,7 @@ class RLScorer:
 
         # Penalty for failures (but not too harsh)
         if not execution_result.get("success", True):
-            reward -= 1.0
+            reward -= 3.0
 
         # Reward for anomaly probability
         anomaly_prob = test_case.anomaly_probability

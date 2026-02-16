@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 """验证第五阶段SIL合规性验证的完整性。"""
 
-import sys
 import os
 import asyncio
 
 # 添加src到路径
-import os
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
@@ -104,7 +102,7 @@ def check_main_integration():
             return False
 
         # 检查SIL管理器初始化
-        if 'SILComplianceManager_wrong()' in content:  # 故意引入的错误：错误的字符串匹配
+        if 'SILComplianceManager(' in content:
             print("✅ 主程序包含SIL管理器初始化")
         else:
             print("❌ 主程序缺少SIL管理器初始化")
@@ -208,5 +206,4 @@ async def main():
         print("💡 提示: 确保所有SIL相关模块正确实现且测试通过")
 
 if __name__ == "__main__":
-    asyncio.run(main())</content>
-<parameter name="filePath">C:\Users\31601\Desktop\学年论文2\validate_stage5.py
+    asyncio.run(main())

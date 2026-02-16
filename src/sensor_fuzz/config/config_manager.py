@@ -33,16 +33,19 @@ class DatabaseConnectionManager:
     """Thread-safe SQLite connection manager to prevent connection leaks."""
 
     def __init__(self, db_path: Path, max_connections: int = 5):
+        """方法说明：执行   init   相关逻辑。"""
         self.db_path = db_path
         self.max_connections = max_connections
         self._connections: List[sqlite3.Connection] = []
         self._available: List[sqlite3.Connection] = []
 
     def __enter__(self) -> sqlite3.Connection:
+        """方法说明：执行   enter   相关逻辑。"""
         return self.get_connection()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Connection will be returned to pool by context manager
+        """方法说明：执行   exit   相关逻辑。"""
         pass
 
     @contextmanager
@@ -131,6 +134,7 @@ class ConfigError(Exception):
     def __init__(
         self, category: str, message: str, *, detail: Optional[str] = None
     ) -> None:
+        """方法说明：执行   init   相关逻辑。"""
         super().__init__(message)
         self.category = category
         self.detail = detail
@@ -146,6 +150,7 @@ class ConfigManager:
         locale: str = "en",
         loader: Optional[ConfigLoader] = None,
     ) -> None:
+        """方法说明：执行   init   相关逻辑。"""
         self.config_path = Path(config_path)
         self.db_path = Path(db_path)
         self.locale = locale if locale in {"en", "zh"} else "en"
@@ -161,12 +166,14 @@ class ConfigManager:
     # ---------- Public API ----------
     @property
     def current_config(self) -> FrameworkConfig:
+        """方法说明：执行 current config 相关逻辑。"""
         if not self._config:
             raise ConfigError("parameter_error", self._msg("not_loaded"))
         return self._config
 
     @property
     def inflight_tasks(self) -> List[str]:
+        """方法说明：执行 inflight tasks 相关逻辑。"""
         return list(self._inflight_tasks)
 
     def load_config(
@@ -277,6 +284,7 @@ class ConfigManager:
         )
 
     def list_versions(self) -> List[VersionRecord]:
+        """方法说明：执行 list versions 相关逻辑。"""
         query = (
             "select version, author, created_at, summary from versions order by id asc"
         )
@@ -326,6 +334,7 @@ class ConfigManager:
 
     # ---------- Internal helpers ----------
     def _init_db(self) -> None:
+        """方法说明：执行  init db 相关逻辑。"""
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         with self._db_manager.get_connection() as conn:
             conn.execute("""
@@ -343,6 +352,7 @@ class ConfigManager:
     def _persist_version(
         self, cfg: FrameworkConfig, *, author: str, summary: str
     ) -> str:
+        """方法说明：执行  persist version 相关逻辑。"""
         payload = {
             "protocols": cfg.protocols,
             "sensors": cfg.sensors,
@@ -369,11 +379,13 @@ class ConfigManager:
         return version_label
 
     def _fetch_rows(self, query: str) -> List[tuple]:
+        """方法说明：执行  fetch rows 相关逻辑。"""
         with self._db_manager.get_connection() as conn:
             cur = conn.execute(query)
             return cur.fetchall()
 
     def _load_version_payload(self, version: str) -> Dict[str, Any]:
+        """方法说明：执行  load version payload 相关逻辑。"""
         with self._db_manager.get_connection() as conn:
             cur = conn.execute(
                 "select config_json from versions where version = ?", (version,)
@@ -386,6 +398,7 @@ class ConfigManager:
             return json.loads(row[0])
 
     def _write_config_file(self, cfg: FrameworkConfig) -> None:
+        """方法说明：执行  write config file 相关逻辑。"""
         payload = {
             "protocols": cfg.protocols,
             "sensors": cfg.sensors,
@@ -397,6 +410,7 @@ class ConfigManager:
         )
 
     def _parse_with_line_info(self, path: Path) -> Dict[str, Any]:
+        """方法说明：执行  parse with line info 相关逻辑。"""
         suffix = path.suffix.lower()
         if suffix not in {".yml", ".yaml", ".json"}:
             raise ConfigError("syntax_error", self._msg("format_error", path=str(path)))
@@ -430,6 +444,7 @@ class ConfigManager:
         sensor_name: Optional[str] = None,
         target_protocol: Optional[str] = None,
     ) -> None:
+        """方法说明：执行  validate sensor protocol rules 相关逻辑。"""
         sensors = (
             cfg.sensors
             if sensor_name is None
@@ -458,6 +473,7 @@ class ConfigManager:
                 )
 
     def _ensure_driver_available(self, protocol: str) -> None:
+        """方法说明：执行  ensure driver available 相关逻辑。"""
         spec = PROTOCOL_SPECS.get(protocol)
         if not spec:
             raise ConfigError(
@@ -471,6 +487,7 @@ class ConfigManager:
             )
 
     def _flatten(self, data: Dict[str, Any], prefix: str = "") -> Dict[str, Any]:
+        """方法说明：执行  flatten 相关逻辑。"""
         flat: Dict[str, Any] = {}
         for key, value in data.items():
             path = f"{prefix}.{key}" if prefix else key
@@ -481,6 +498,7 @@ class ConfigManager:
         return flat
 
     def _msg(self, key: str, **kwargs: Any) -> str:
+        """方法说明：执行  msg 相关逻辑。"""
         templates = {
             "format_error": {
                 "en": "Unsupported config format for {path}",

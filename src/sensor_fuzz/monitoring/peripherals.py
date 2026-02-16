@@ -8,18 +8,24 @@ import time
 
 
 class GpioMonitor:
+    """类说明：封装 GpioMonitor 的相关行为。"""
     def __init__(self, provider: str = "mock") -> None:
+        """方法说明：执行   init   相关逻辑。"""
         self.provider = provider
 
     def read_state(self) -> Dict[str, bool]:
+        """方法说明：执行 read state 相关逻辑。"""
         return {"led": False, "relay": False}
 
 
 class EnvMonitor:
+    """类说明：封装 EnvMonitor 的相关行为。"""
     def __init__(self, provider: str = "mock") -> None:
+        """方法说明：执行   init   相关逻辑。"""
         self.provider = provider
 
     def read_env(self) -> Dict[str, float]:
+        """方法说明：执行 read env 相关逻辑。"""
         return {
             "temperature": 25.0,
             "humidity": 50.0,
@@ -32,6 +38,7 @@ class SystemMonitor:
     """System monitoring manager."""
 
     def __init__(self):
+        """方法说明：执行   init   相关逻辑。"""
         self._running = False
         self._thread: Optional[threading.Thread] = None
         self._gpio_monitor = GpioMonitor()

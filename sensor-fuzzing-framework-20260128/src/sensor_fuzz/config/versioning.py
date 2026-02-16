@@ -16,11 +16,13 @@ class ConfigVersionStore:
     def __init__(
         self, base_dir: str | Path = ".sf_config_versions", retain: int = 20
     ) -> None:
+        """方法说明：执行   init   相关逻辑。"""
         self._base = Path(base_dir)
         self._base.mkdir(parents=True, exist_ok=True)
         self._retain = retain
 
     def save(self, name: str, config: FrameworkConfig) -> Path:
+        """方法说明：执行 save 相关逻辑。"""
         ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         path = self._base / f"{name}-{ts}.json"
         payload: Dict[str, Any] = {
@@ -35,9 +37,11 @@ class ConfigVersionStore:
         return path
 
     def list_versions(self) -> list[Path]:
+        """方法说明：执行 list versions 相关逻辑。"""
         return sorted(self._base.glob("*.json"))
 
     def load(self, path: str | Path) -> Dict[str, Any]:
+        """方法说明：执行 load 相关逻辑。"""
         try:
             return json.loads(Path(path).read_text(encoding="utf-8"))
         except FileNotFoundError:
@@ -46,16 +50,19 @@ class ConfigVersionStore:
             raise ValueError(f"Failed to load version file {path}: {exc}") from exc
 
     def latest(self) -> Optional[Path]:
+        """方法说明：执行 latest 相关逻辑。"""
         versions = self.list_versions()
         return versions[-1] if versions else None
 
     def rollback_latest(self) -> Optional[Dict[str, Any]]:
+        """方法说明：执行 rollback latest 相关逻辑。"""
         latest = self.latest()
         if latest is None:
             return None
         return self.load(latest)
 
     def _prune_excess(self) -> None:
+        """方法说明：执行  prune excess 相关逻辑。"""
         if self._retain <= 0:
             return
         versions = self.list_versions()

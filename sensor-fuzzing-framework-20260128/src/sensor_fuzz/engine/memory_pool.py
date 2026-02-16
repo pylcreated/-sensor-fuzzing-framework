@@ -39,6 +39,7 @@ class ObjectPool(Generic[T]):
         timeout: float = 300.0,
         cleanup_interval: float = 60.0
     ):
+        """方法说明：执行   init   相关逻辑。"""
         self.factory = factory
         self.max_size = max_size
         self.timeout = timeout
@@ -162,6 +163,7 @@ class CaseObjectPool(ObjectPool[dict]):
     """Object pool for fuzzing test cases to reduce memory allocation in data generation."""
 
     def __init__(self, max_size: int = 200, timeout: float = 600.0):
+        """方法说明：执行   init   相关逻辑。"""
         super().__init__(
             factory=lambda: {},
             max_size=max_size,
@@ -174,6 +176,7 @@ class ConnectionObjectPool(ObjectPool[Any]):
     """Object pool for protocol connection objects to avoid frequent connect/disconnect."""
 
     def __init__(self, factory: Callable[[], Any], max_size: int = 50, timeout: float = 300.0):
+        """方法说明：执行   init   相关逻辑。"""
         super().__init__(
             factory=factory,
             max_size=max_size,
@@ -186,6 +189,7 @@ class LogObjectPool(ObjectPool[dict]):
     """Object pool for log entries to reduce memory pressure in monitoring feedback."""
 
     def __init__(self, max_size: int = 500, timeout: float = 180.0):
+        """方法说明：执行   init   相关逻辑。"""
         super().__init__(
             factory=lambda: {},
             max_size=max_size,

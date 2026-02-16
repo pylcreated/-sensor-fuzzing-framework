@@ -52,6 +52,7 @@ def test_basic_memory():
 
     # Test connection pool
     def dummy_factory():
+        """方法说明：执行 dummy factory 相关逻辑。"""
         return {"type": "dummy_connection", "created": time.time()}
 
     conn_pool = ConnectionObjectPool(dummy_factory, max_size=50, timeout=300.0)

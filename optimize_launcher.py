@@ -12,7 +12,9 @@ from pathlib import Path
 from typing import Dict, List, Any
 
 class OptimizationLauncher:
+    """类说明：封装 OptimizationLauncher 的相关行为。"""
     def __init__(self):
+        """方法说明：执行   init   相关逻辑。"""
         self.project_root = Path(__file__).parent
         self.results = {}
 
@@ -305,6 +307,7 @@ if __name__ == '__main__':
         print(f"📄 优化总结已保存到: {summary_file}")
 
 def main():
+    """方法说明：执行 main 相关逻辑。"""
     print("🚀 工业传感器模糊测试框架 - 优化启动器")
     print("=" * 50)
 

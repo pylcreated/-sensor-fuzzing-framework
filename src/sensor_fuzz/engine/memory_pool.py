@@ -39,6 +39,7 @@ class ObjectPool(Generic[T]):
         timeout: float = 300.0,
         cleanup_interval: float = 60.0
     ):
+        """方法说明：执行   init   相关逻辑。"""
         self.factory = factory
         self.max_size = max_size
         self.timeout = timeout
@@ -53,14 +54,15 @@ class ObjectPool(Generic[T]):
             'misses': 0  # objects created new
         }
 
+        self._last_cleanup = time.time()
+        self._cleanup_interval = cleanup_interval
+
         # Start cleanup thread
         self._cleanup_thread = threading.Thread(
             target=self._cleanup_worker,
             daemon=True
         )
         self._cleanup_thread.start()
-        self._last_cleanup = time.time()
-        self._cleanup_interval = cleanup_interval
 
     def acquire(self, timeout: Optional[float] = None) -> T:
         """Acquire an object from the pool, creating one if necessary.
@@ -72,7 +74,10 @@ class ObjectPool(Generic[T]):
             Object from pool or newly created
         """
         try:
-            obj, _ = self._pool.get(timeout=timeout)
+            if timeout is None:
+                obj, _ = self._pool.get_nowait()
+            else:
+                obj, _ = self._pool.get(timeout=timeout)
             with self._lock:
                 self._stats['acquired'] += 1
                 self._stats['hits'] += 1
@@ -162,6 +167,7 @@ class CaseObjectPool(ObjectPool[dict]):
     """Object pool for fuzzing test cases to reduce memory allocation in data generation."""
 
     def __init__(self, max_size: int = 200, timeout: float = 600.0):
+        """方法说明：执行   init   相关逻辑。"""
         super().__init__(
             factory=lambda: {},
             max_size=max_size,
@@ -174,6 +180,7 @@ class ConnectionObjectPool(ObjectPool[Any]):
     """Object pool for protocol connection objects to avoid frequent connect/disconnect."""
 
     def __init__(self, factory: Callable[[], Any], max_size: int = 50, timeout: float = 300.0):
+        """方法说明：执行   init   相关逻辑。"""
         super().__init__(
             factory=factory,
             max_size=max_size,
@@ -187,6 +194,7 @@ class LogObjectPool(ObjectPool[dict]):
     """Object pool for log entries to reduce memory pressure in monitoring feedback."""
 
     def __init__(self, max_size: int = 500, timeout: float = 180.0):
+        """方法说明：执行   init   相关逻辑。"""
         super().__init__(
             factory=lambda: {},
             max_size=max_size,

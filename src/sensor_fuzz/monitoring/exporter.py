@@ -21,6 +21,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
     """Web dashboard handler for real-time monitoring."""
 
     def __init__(self, *args, dashboard_data=None, **kwargs):
+        """方法说明：执行   init   相关逻辑。"""
         self.dashboard_data = dashboard_data or {}
         super().__init__(*args, **kwargs)
 
@@ -310,25 +311,26 @@ class EnhancedMetricsExporter:
         dashboard_port: int = 8080,
         dashboard_host: str = "localhost"
     ):
+        """方法说明：执行   init   相关逻辑。"""
         self.port = port
         self.dashboard_port = dashboard_port
         self.dashboard_host = dashboard_host
         self.dashboard_data: Dict[str, Any] = {}
+        self._prometheus_server = None
+        self._prometheus_worker: Optional[threading.Thread] = None
         self._dashboard_server: Optional[HTTPServer] = None
-        self._prometheus_thread: Optional[threading.Thread] = None
         self._dashboard_thread: Optional[threading.Thread] = None
 
     def start(self) -> None:
         """Start both Prometheus and dashboard servers."""
-        # Start Prometheus exporter
-        self._prometheus_thread = threading.Thread(
-            target=start_http_server, args=(self.port,), daemon=True
-        )
-        self._prometheus_thread.start()
+        # Start Prometheus exporter and keep handles for graceful shutdown
+        self._prometheus_server, self._prometheus_worker = start_http_server(self.port)
 
         # Start dashboard server
         def run_dashboard():
+            """方法说明：执行 run dashboard 相关逻辑。"""
             def handler_class(*args, **kwargs):
+                """方法说明：执行 handler class 相关逻辑。"""
                 return DashboardHandler(
                     *args, dashboard_data=self.dashboard_data, **kwargs
                 )
@@ -354,10 +356,21 @@ class EnhancedMetricsExporter:
 
     def stop(self) -> None:
         """Stop all servers."""
+        if self._prometheus_server:
+            self._prometheus_server.shutdown()
+            self._prometheus_server.server_close()
+            self._prometheus_server = None
+        if self._prometheus_worker:
+            self._prometheus_worker.join(timeout=2)
+            self._prometheus_worker = None
+
         if self._dashboard_server:
             self._dashboard_server.shutdown()
             self._dashboard_server.server_close()
-        # Prometheus server runs in daemon thread, will stop with main process
+            self._dashboard_server = None
+        if self._dashboard_thread:
+            self._dashboard_thread.join(timeout=2)
+            self._dashboard_thread = None
 
 
 # Backward compatibility

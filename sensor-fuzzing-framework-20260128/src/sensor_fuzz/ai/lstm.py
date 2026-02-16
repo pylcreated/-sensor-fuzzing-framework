@@ -25,6 +25,7 @@ except (
 
 
 def _require_torch() -> None:
+    """方法说明：执行  require torch 相关逻辑。"""
     if torch is None:
         raise ImportError(
             "torch is required for LSTM-based anomaly prediction; "
@@ -33,6 +34,7 @@ def _require_torch() -> None:
 
 
 def _require_torch() -> None:
+    """方法说明：执行  require torch 相关逻辑。"""
     if torch is None:
         raise ImportError(
             "torch is required for LSTM-based anomaly prediction; "
@@ -41,6 +43,7 @@ def _require_torch() -> None:
 
 
 class LSTMAnomaly(nn.Module if torch else object):  # type: ignore[misc]
+    """类说明：封装 LSTMAnomaly 的相关行为。"""
     def __init__(
         self,
         input_dim: int = 4,
@@ -49,6 +52,7 @@ class LSTMAnomaly(nn.Module if torch else object):  # type: ignore[misc]
         dropout: float = 0.2,
         bidirectional: bool = True
     ):
+        """方法说明：执行   init   相关逻辑。"""
         _require_torch()
         super().__init__()
         self.input_dim = input_dim
@@ -99,6 +103,7 @@ class LSTMAnomaly(nn.Module if torch else object):  # type: ignore[misc]
 
     def forward(self, x):
         # Handle both single timestep and sequence inputs
+        """方法说明：执行 forward 相关逻辑。"""
         if x.dim() == 2:  # (batch_size, input_dim) -> add sequence dimension
             x = x.unsqueeze(1)  # (batch_size, 1, input_dim)
 
@@ -217,6 +222,7 @@ def train_lstm(
 
 
 def predict(model: LSTMAnomaly, series: np.ndarray) -> np.ndarray:
+    """方法说明：执行 predict 相关逻辑。"""
     _require_torch()
     model.eval()
     with torch.no_grad():

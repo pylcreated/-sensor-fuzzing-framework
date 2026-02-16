@@ -7,6 +7,7 @@ from typing import Optional
 
 
 def setup_logging(level: str = "INFO", log_file: Optional[str] = None) -> None:
+    """方法说明：执行 setup logging 相关逻辑。"""
     handlers = [logging.StreamHandler()]
     if log_file:
         handlers.append(logging.FileHandler(log_file))

@@ -12,6 +12,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
 def _derive_key(password: str, salt: bytes) -> bytes:
+    """方法说明：执行  derive key 相关逻辑。"""
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,

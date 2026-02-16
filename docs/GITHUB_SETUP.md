@@ -4,11 +4,11 @@
 
 项目主页: [https://github.com/pylcreated/-sensor-fuzzing-framework](https://github.com/pylcreated/-sensor-fuzzing-framework)
 
-## 📋 前置准备
+##  前置准备
 
 在创建GitHub仓库之前，请确保：
 
-1. **项目已准备就绪** ✅
+1. **项目已准备就绪** 
    - Git仓库已初始化
    - 初始提交已完成
    - .gitignore已配置
@@ -22,7 +22,7 @@
    - 描述：`Industrial Sensor Fuzzing Framework with IEC 61508 SIL Compliance`
    - 可见性：`Public` (开源) 或 `Private` (私有)
 
-## 🚀 创建GitHub仓库步骤
+##  创建GitHub仓库步骤
 
 ### 步骤1：访问GitHub创建页面
 ```
@@ -37,9 +37,9 @@ Visibility: Public (推荐开源)
 ```
 
 **不要勾选：**
-- ❌ Add a README file
-- ❌ Add .gitignore
-- ❌ Choose a license (稍后添加)
+-  Add a README file
+-  Add .gitignore
+-  Choose a license (稍后添加)
 
 ### 步骤3：创建仓库
 点击 **"Create repository"**
@@ -50,7 +50,7 @@ Visibility: Public (推荐开源)
 https://github.com/YOUR_USERNAME/sensor-fuzzing-framework.git
 ```
 
-## 🔗 连接本地仓库到GitHub
+##  连接本地仓库到GitHub
 
 ### 方法1：添加远程仓库并推送
 ```bash
@@ -72,7 +72,7 @@ git remote set-url origin https://github.com/YOUR_USERNAME/sensor-fuzzing-framew
 git push -u origin master
 ```
 
-## 📝 添加许可证
+##  添加许可证
 
 ### 推荐许可证
 ```bash
@@ -86,7 +86,7 @@ git commit -m "Add MIT License"
 git push
 ```
 
-## 🏷️ 添加话题标签 (Topics)
+##  添加话题标签 (Topics)
 
 在GitHub仓库页面，添加以下话题：
 ```
@@ -102,11 +102,11 @@ docker
 kubernetes
 ```
 
-## 📊 配置仓库设置
+##  配置仓库设置
 
 ### 1. 仓库描述
 ```
-⚡ Industrial Sensor Fuzzing Framework
+ Industrial Sensor Fuzzing Framework
 
 A comprehensive framework for fuzzing industrial sensors with IEC 61508 SIL compliance validation.
 Supports multiple industrial protocols (MQTT, Modbus, OPC UA, Profinet, UART, I2C, SPI)
@@ -118,13 +118,13 @@ with AI-powered anomaly detection and distributed testing capabilities.
 - **About**: 添加上述描述
 
 ### 3. 启用功能
-- ✅ Issues
-- ✅ Discussions (可选)
-- ✅ Projects (可选)
-- ✅ Wiki (可选)
-- ✅ Sponsorships (可选)
+-  Issues
+-  Discussions (可选)
+-  Projects (可选)
+-  Wiki (可选)
+-  Sponsorships (可选)
 
-## 🔄 CI/CD配置
+##  CI/CD配置
 
 GitHub Actions已配置在 `.github/workflows/ci.yml`：
 - 多平台测试 (Ubuntu/Windows)
@@ -132,7 +132,7 @@ GitHub Actions已配置在 `.github/workflows/ci.yml`：
 - 自动化代码质量检查
 - 覆盖率报告
 
-## 📚 文档发布
+##  文档发布
 
 ### GitHub Pages设置
 1. 进入仓库 Settings > Pages
@@ -145,7 +145,7 @@ GitHub Actions已配置在 `.github/workflows/ci.yml`：
 2. 连接GitHub仓库
 3. 自动生成文档网站
 
-## 🌟 仓库徽章
+##  仓库徽章
 
 在README.md中添加状态徽章：
 
@@ -156,7 +156,7 @@ GitHub Actions已配置在 `.github/workflows/ci.yml`：
 [![Docker](https://img.shields.io/docker/pulls/YOUR_USERNAME/sensor-fuzz-framework)](https://hub.docker.com/r/YOUR_USERNAME/sensor-fuzz-framework)
 ```
 
-## 🔐 安全配置
+##  安全配置
 
 ### Dependabot
 启用自动依赖更新：
@@ -170,7 +170,7 @@ GitHub Actions已配置在 `.github/workflows/ci.yml`：
 2. Set up code scanning
 3. Choose CodeQL
 
-## 📦 发布管理
+##  发布管理
 
 ### 创建发布版本
 ```bash
@@ -212,7 +212,7 @@ jobs:
         password: ${{ secrets.PYPI_API_TOKEN }}
 ```
 
-## 🎯 后续维护
+##  后续维护
 
 ### 分支策略
 ```
@@ -245,7 +245,7 @@ hotfix/*    # 热修复分支
 - `feature_request.md`
 - `security_report.md`
 
-## 🚀 推广项目
+##  推广项目
 
 ### 社区建设
 - 添加项目到相关论坛
@@ -259,12 +259,12 @@ hotfix/*    # 热修复分支
 
 ---
 
-## 📞 获取帮助
+##  获取帮助
 
 如果在创建仓库过程中遇到问题：
 1. 检查GitHub状态页面
 2. 查看GitHub文档
 3. 联系项目维护者
 
-**仓库创建成功后，请更新 `pyproject.toml` 中的URL配置！** 🎉</content>
+**仓库创建成功后，请更新 `pyproject.toml` 中的URL配置！** </content>
 <parameter name="filePath">C:\Users\31601\Desktop\学年论文2\docs\GITHUB_SETUP.md

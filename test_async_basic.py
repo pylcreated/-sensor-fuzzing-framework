@@ -4,12 +4,15 @@
 import asyncio
 import sys
 import os
+import pytest
 
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from sensor_fuzz.engine.async_drivers import AsyncMqttDriver, AsyncModbusTcpDriver, AsyncUartDriver
 
+
+@pytest.mark.asyncio
 async def test_async_drivers():
     """Test async drivers basic functionality."""
     print("Testing async drivers...")

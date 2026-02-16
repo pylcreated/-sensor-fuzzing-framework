@@ -4,9 +4,9 @@
 
 项目主页: [https://github.com/pylcreated/-sensor-fuzzing-framework](https://github.com/pylcreated/-sensor-fuzzing-framework)
 
-## 📋 实际可用的获取方式
+##  实际可用的获取方式
 
-### 🌐 **方式1：Git 克隆（推荐）**
+###  **方式1：Git 克隆（推荐）**
 
 ```bash
 # 从 GitHub 克隆最新代码
@@ -23,9 +23,9 @@ pip install -r requirements.txt
 python -m sensor_fuzz
 ```
 
-### 💻 **方式2：直接文件传输（离线场景）**
+###  **方式2：直接文件传输（离线场景）**
 
-### 🐳 **方式2：Docker镜像分发**
+###  **方式2：Docker镜像分发**
 
 ```bash
 # 如果有Docker镜像（需要先构建）
@@ -37,7 +37,7 @@ docker build -t sensor-fuzz-framework -f deploy/Dockerfile .
 docker run -p 8000:8000 sensor-fuzz-framework
 ```
 
-### 📦 **方式3：Python包分发**
+###  **方式3：Python包分发**
 
 ```bash
 # 1. 从维护者获取 wheel 文件
@@ -50,7 +50,7 @@ pip install sensor_fuzz_framework-0.1.0-py3-none-any.whl
 sensor-fuzz
 ```
 
-## 🔗 未来在线分发
+##  未来在线分发
 
 ### GitHub仓库设置
 ```bash
@@ -70,20 +70,20 @@ pip install sensor-fuzz-framework
 docker pull your-org/sensor-fuzz-framework:latest
 ```
 
-## 📞 联系方式
+##  联系方式
 
 如需获取项目文件，请联系项目维护者：
 - 邮箱：your-email@example.com
 - 内部系统：公司文件共享平台
 - 物理媒介：U盘/移动硬盘传输
 
-## ✅ 验证安装
+##  验证安装
 
 安装完成后，运行以下命令验证：
 
 ```bash
 # 1. 导入测试
-python -c "import sensor_fuzz; print('✅ 模块导入成功')"
+python -c "import sensor_fuzz; print(' 模块导入成功')"
 
 # 2. 功能测试
 python -m sensor_fuzz --help
@@ -92,7 +92,7 @@ python -m sensor_fuzz --help
 python sil_compliance_test.py
 ```
 
-## 🚀 快速部署脚本
+##  快速部署脚本
 
 创建 `setup_and_run.ps1` (Windows) 或 `setup_and_run.sh` (Linux)：
 

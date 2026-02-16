@@ -1,3 +1,5 @@
+"""模块说明：tests/test_config_manager.py 的主要实现与辅助逻辑。"""
+
 import json
 import warnings
 from pathlib import Path
@@ -13,6 +15,7 @@ warnings.simplefilter("ignore", ResourceWarning)
 
 
 def _write_config(path: Path, payload: dict[str, Any]) -> Path:
+    """方法说明：执行  write config 相关逻辑。"""
     path.write_text(json.dumps(payload), encoding="utf-8") if path.suffix == ".json" else path.write_text(
         _to_yaml(payload), encoding="utf-8"
     )
@@ -21,6 +24,7 @@ def _write_config(path: Path, payload: dict[str, Any]) -> Path:
 
 def _to_yaml(payload: dict[str, Any]) -> str:
     # simple helper to avoid yaml import in tests
+    """方法说明：执行  to yaml 相关逻辑。"""
     lines = ["protocols:"]
     for name, cfg in payload["protocols"].items():
         lines.append(f"  {name}:")
@@ -43,6 +47,7 @@ def _to_yaml(payload: dict[str, Any]) -> str:
 
 
 def _base_payload() -> dict[str, Any]:
+    """方法说明：执行  base payload 相关逻辑。"""
     return {
         "protocols": {
             "profinet": {"endpoint": "192.168.1.10", "device_name": "pn", "restartless_switch": True},
@@ -71,6 +76,7 @@ def _base_payload() -> dict[str, Any]:
 
 
 def test_protocol_switch_and_versioning(tmp_path: Path, monkeypatch):
+    """方法说明：执行 test protocol switch and versioning 相关逻辑。"""
     cfg_path = tmp_path / "config.yaml"
     payload = _base_payload()
     _write_config(cfg_path, payload)
@@ -84,6 +90,7 @@ def test_protocol_switch_and_versioning(tmp_path: Path, monkeypatch):
     real_find_spec = importlib.util.find_spec
 
     def find_spec_allow_spi(name):
+        """方法说明：执行 find spec allow spi 相关逻辑。"""
         if name == "pyserial":
             return object()
         return real_find_spec(name)
@@ -112,6 +119,7 @@ def test_protocol_switch_and_versioning(tmp_path: Path, monkeypatch):
 
 
 def test_compatibility_helper(tmp_path: Path):
+    """方法说明：执行 test compatibility helper 相关逻辑。"""
     cfg_path = tmp_path / "config.yaml"
     payload = _base_payload()
     _write_config(cfg_path, payload)
@@ -126,6 +134,7 @@ def test_compatibility_helper(tmp_path: Path):
 
 def test_error_messages_and_locale(tmp_path: Path, monkeypatch):
     # syntax error with line number
+    """方法说明：执行 test error messages and locale 相关逻辑。"""
     bad_path = tmp_path / "bad.yaml"
     bad_path.write_text("protocols:\n  profinet: [oops\n", encoding="utf-8")
     manager = ConfigManager(bad_path, db_path=tmp_path / "db1.sqlite", locale="en")
@@ -158,6 +167,7 @@ def test_error_messages_and_locale(tmp_path: Path, monkeypatch):
     real_find_spec = importlib.util.find_spec
 
     def fake_find_spec(name):
+        """方法说明：执行 fake find spec 相关逻辑。"""
         if name == "pyserial":
             return None
         return real_find_spec(name)

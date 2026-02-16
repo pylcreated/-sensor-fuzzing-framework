@@ -1,10 +1,10 @@
-# 工业传感器模糊测试框架 - 实施计划
+工业传感器模糊测试框架 - 实施计划
 
-## 🚀 快速启动指南
+快速启动指南
 
-### 立即可行的优化 (本周内完成)
+立即可行的优化 (本周内完成)
 
-#### 1. 测试覆盖率快速提升
+1. 测试覆盖率快速提升
 ```bash
 # 识别低覆盖率文件
 python -m pytest --cov=src/sensor_fuzz --cov-report=term-missing | grep -E "(50%|43%|63%)"
@@ -13,7 +13,7 @@ python -m pytest --cov=src/sensor_fuzz --cov-report=term-missing | grep -E "(50%
 python -m pytest tests/test_main.py -v --cov=src/sensor_fuzz/__main__.py --cov-report=term-missing
 ```
 
-#### 2. 性能基准建立
+2. 性能基准建立
 ```bash
 # 创建性能基准测试
 python -c "
@@ -29,7 +29,7 @@ print(f'基准性能: {duration:.2f}秒')
 "
 ```
 
-#### 3. 内存使用分析
+3. 内存使用分析
 ```bash
 # 内存分析
 python -c "
@@ -46,16 +46,15 @@ print(f'峰值内存: {peak / 1024**2:.1f}MB')
 
 ---
 
-## 📋 具体实施步骤
+具体实施步骤
 
-### 阶段1: 测试覆盖率提升 (Week 1-2)
+阶段1: 测试覆盖率提升 (Week 1-2)
+1.1 主入口点测试增强
+文件: `src/sensor_fuzz/__main__.py`
+当前覆盖率: 50%
+缺失行: 31-33, 49-50, 69-70, 76-77, 91, 97-143, 150-160, 165-172, 179-183, 192-196, 201, 207
 
-#### 1.1 主入口点测试增强
-**文件**: `src/sensor_fuzz/__main__.py`
-**当前覆盖率**: 50%
-**缺失行**: 31-33, 49-50, 69-70, 76-77, 91, 97-143, 150-160, 165-172, 179-183, 192-196, 201, 207
-
-**测试策略**:
+测试策略:
 ```python
 # tests/test_main_enhanced.py
 import pytest
@@ -80,12 +79,12 @@ class TestMainApplicationEnhanced:
         pass
 ```
 
-#### 1.2 核心引擎测试增强
-**文件**: `src/sensor_fuzz/engine/runner.py`
-**当前覆盖率**: 51%
-**缺失行**: 大量执行路径未覆盖
+1.2 核心引擎测试增强
+文件: `src/sensor_fuzz/engine/runner.py`
+当前覆盖率: 51%
+缺失行: 大量执行路径未覆盖
 
-**测试策略**:
+测试策略:
 ```python
 # tests/test_runner_enhanced.py
 class TestFuzzingRunnerEnhanced:
@@ -106,12 +105,12 @@ class TestFuzzingRunnerEnhanced:
         pass
 ```
 
-#### 1.3 AI模型测试增强
-**文件**: `src/sensor_fuzz/ai/lstm.py`
-**当前覆盖率**: 63%
-**缺失行**: 训练和预测的边缘情况
+1.3 AI模型测试增强
+文件: `src/sensor_fuzz/ai/lstm.py`
+当前覆盖率: 63%
+缺失行: 训练和预测的边缘情况
 
-**测试策略**:
+测试策略:
 ```python
 # tests/test_ai_enhanced.py
 class TestLSTMEnhanced:
@@ -128,12 +127,12 @@ class TestLSTMEnhanced:
         pass
 ```
 
-### 阶段2: 性能优化 (Week 3-4)
+阶段2: 性能优化 (Week 3-4)
 
-#### 2.1 异步处理优化
-**目标文件**: `src/sensor_fuzz/engine/concurrency.py`
+2.1 异步处理优化
+目标文件: `src/sensor_fuzz/engine/concurrency.py`
 
-**优化策略**:
+优化策略:
 ```python
 # 改进异步任务调度
 import asyncio
@@ -148,10 +147,10 @@ class OptimizedTaskScheduler:
         return await self.loop.run_in_executor(self.executor, func, *args)
 ```
 
-#### 2.2 内存优化
-**目标文件**: `src/sensor_fuzz/engine/runner.py`
+ 2.2 内存优化
+目标文件: `src/sensor_fuzz/engine/runner.py`
 
-**优化策略**:
+优化策略:
 ```python
 # 实现对象池
 from typing import Dict, List, Any
@@ -177,10 +176,10 @@ class ObjectPool:
         self.pool.clear()
 ```
 
-#### 2.3 多核利用优化
-**配置文件**: `pytest.ini`
+2.3 多核利用优化
+配置文件: `pytest.ini`
 
-**优化策略**:
+优化策略:
 ```ini
 # pytest.ini - 启用并行测试
 [tool:pytest]
@@ -191,12 +190,12 @@ python_classes = Test*
 python_functions = test_*
 ```
 
-### 阶段3: CI/CD增强 (Week 5-6)
+阶段3: CI/CD增强 (Week 5-6)
 
-#### 3.1 质量门禁强化
-**文件**: `.github/workflows/ci.yml`
+3.1 质量门禁强化
+文件*: `.github/workflows/ci.yml`
 
-**增强配置**:
+增强配置:
 ```yaml
 # 添加性能测试
 - name: Performance benchmark
@@ -215,8 +214,8 @@ python_functions = test_*
     python -m pytest --cov=src --cov-report=xml --cov-fail-under=95
 ```
 
-#### 3.2 性能基准测试
-**新文件**: `tests/test_performance.py`
+3.2 性能基准测试
+新文件: `tests/test_performance.py`
 
 ```python
 # tests/test_performance.py
@@ -251,12 +250,12 @@ class TestPerformance:
         assert memory_increase < 100 * 1024 * 1024  # 100MB
 ```
 
-### 阶段4: 生产就绪 (Week 7-8)
+阶段4: 生产就绪 (Week 7-8)
 
-#### 4.1 高可用架构
-**新文件**: `deploy/kubernetes/`
+4.1 高可用架构
+新文件: `deploy/kubernetes/`
 
-**部署配置**:
+部署配置:
 ```yaml
 # deploy/kubernetes/deployment.yaml
 apiVersion: apps/v1
@@ -293,10 +292,10 @@ spec:
           periodSeconds: 10
 ```
 
-#### 4.2 监控告警系统
-**文件**: `src/sensor_fuzz/monitoring/`
+4.2 监控告警系统
+文件: `src/sensor_fuzz/monitoring/`
 
-**增强监控**:
+增强监控:
 ```python
 # src/sensor_fuzz/monitoring/alerts.py
 from prometheus_client import Gauge, Alert
@@ -321,36 +320,36 @@ class AlertManager:
 
 ---
 
-## 📊 进度跟踪
+进度跟踪
 
-### 日进度跟踪表
+日进度跟踪表
 | 天数 | 任务 | 状态 | 验证方法 |
 |------|------|------|----------|
-| 1 | 主入口点测试 (50%→70%) | ⏳ | pytest --cov=src/sensor_fuzz/__main__.py |
-| 2 | 主入口点测试 (70%→90%) | ⏳ | pytest --cov=src/sensor_fuzz/__main__.py |
-| 3 | 核心引擎测试 (51%→70%) | ⏳ | pytest --cov=src/sensor_fuzz/engine/runner.py |
-| 4 | 核心引擎测试 (70%→85%) | ⏳ | pytest --cov=src/sensor_fuzz/engine/runner.py |
-| 5 | AI模型测试 (63%→80%) | ⏳ | pytest --cov=src/sensor_fuzz/ai/lstm.py |
-| 6 | AI模型测试 (80%→85%) | ⏳ | pytest --cov=src/sensor_fuzz/ai/lstm.py |
-| 7 | 分析功能测试 | ⏳ | pytest --cov=src/sensor_fuzz/analysis/ |
-| 8-10 | 性能优化实施 | ⏳ | 基准测试对比 |
-| 11-14 | CI/CD增强 | ⏳ | GitHub Actions验证 |
+| 1 | 主入口点测试 (50%->70%) |  | pytest --cov=src/sensor_fuzz/__main__.py |
+| 2 | 主入口点测试 (70%->90%) |  | pytest --cov=src/sensor_fuzz/__main__.py |
+| 3 | 核心引擎测试 (51%->70%) |  | pytest --cov=src/sensor_fuzz/engine/runner.py |
+| 4 | 核心引擎测试 (70%->85%) |  | pytest --cov=src/sensor_fuzz/engine/runner.py |
+| 5 | AI模型测试 (63%->80%) |  | pytest --cov=src/sensor_fuzz/ai/lstm.py |
+| 6 | AI模型测试 (80%->85%) |  | pytest --cov=src/sensor_fuzz/ai/lstm.py |
+| 7 | 分析功能测试 |  | pytest --cov=src/sensor_fuzz/analysis/ |
+| 8-10 | 性能优化实施 |  | 基准测试对比 |
+| 11-14 | CI/CD增强 |  | GitHub Actions验证 |
 
-### 周里程碑
-- **Week 1**: 覆盖率达到85%+
-- **Week 2**: 覆盖率达到90%+
-- **Week 3**: 性能提升2倍
-- **Week 4**: 性能提升3-5倍
-- **Week 5**: CI/CD完全自动化
-- **Week 6**: 部署流水线完善
-- **Week 7**: 高可用架构完成
-- **Week 8**: 生产就绪验证
+周里程碑
+ Week 1: 覆盖率达到85%+
+ Week 2: 覆盖率达到90%+
+ Week 3: 性能提升2倍
+ Week 4: 性能提升3-5倍
+ Week 5：CI/CD完全自动化
+ Week 6：部署流水线完善
+ Week 7: 高可用架构完成
+ Week 8: 生产就绪验证
 
 ---
 
-## 🛠️ 工具与脚本
+工具与脚本
 
-### 自动化脚本
+自动化脚本
 ```bash
 # scripts/run_optimization_checks.sh
 #!/bin/bash
@@ -361,7 +360,7 @@ echo "=== 优化检查脚本 ==="
 echo "1. 代码质量检查..."
 flake8 src/sensor_fuzz/ --max-line-length=88 --extend-ignore=E203,W503
 if [ $? -ne 0 ]; then
-    echo "❌ 代码质量检查失败"
+    echo "代码质量检查失败"
     exit 1
 fi
 
@@ -369,7 +368,7 @@ fi
 echo "2. 安全检查..."
 bandit -r src/sensor_fuzz/ --skip B311 -f json -o security-report.json
 if [ $? -ne 0 ]; then
-    echo "❌ 安全检查失败"
+    echo "安全检查失败"
     exit 1
 fi
 
@@ -377,7 +376,7 @@ fi
 echo "3. 测试覆盖率检查..."
 python -m pytest --cov=src/sensor_fuzz --cov-report=term-missing --cov-fail-under=80
 if [ $? -ne 0 ]; then
-    echo "❌ 覆盖率检查失败"
+    echo "覆盖率检查失败"
     exit 1
 fi
 
@@ -385,10 +384,10 @@ fi
 echo "4. 性能基准测试..."
 python scripts/performance_benchmark.py
 
-echo "✅ 所有检查通过!"
+echo "所有检查通过!"
 ```
 
-### 性能基准脚本
+性能基准脚本
 ```python
 # scripts/performance_benchmark.py
 import time
@@ -431,9 +430,9 @@ if __name__ == '__main__':
 
 ---
 
-## 🎯 成功验证
+成功验证
 
-### 自动化验证脚本
+自动化验证脚本
 ```bash
 # scripts/validate_optimization.py
 #!/usr/bin/env python3
@@ -459,10 +458,10 @@ def validate_optimization():
             coverage_data = json.load(f)
             total_coverage = coverage_data['totals']['percent_covered']
             results['coverage'] = total_coverage >= 95.0
-            print(f"覆盖率: {total_coverage:.1f}% - {'✅' if results['coverage'] else '❌'}")
+            print(f"覆盖率: {total_coverage:.1f}% - {'正确' if results['coverage'] else '错误'}")
     else:
         results['coverage'] = False
-        print("❌ 覆盖率测试失败")
+        print("覆盖率测试失败")
 
     # 2. 性能验证
     print("验证性能基准...")
@@ -483,7 +482,7 @@ def validate_optimization():
             results['performance'] = time_improvement >= 3.0
             print(".1f"        else:
             results['performance'] = False
-            print("❌ 性能测试失败")
+            print("性能测试失败")
 
     # 3. 质量验证
     print("验证代码质量...")
@@ -494,7 +493,7 @@ def validate_optimization():
     ], capture_output=True)
 
     results['quality'] = result.returncode == 0
-    print(f"代码质量: {'✅' if results['quality'] else '❌'}")
+    print(f"代码质量: {'正确' if results['quality'] else '错误'}")
 
     # 4. 安全验证
     print("验证安全状态...")
@@ -507,15 +506,15 @@ def validate_optimization():
     high_severity = [issue for issue in security_data.get('results', [])
                     if issue.get('issue_severity') == 'HIGH']
     results['security'] = len(high_severity) == 0
-    print(f"安全检查: {'✅' if results['security'] else '❌'} ({len(high_severity)}个高危问题)")
+    print(f"安全检查: {'正确' if results['security'] else '错误'} ({len(high_severity)}个高危问题)")
 
     # 总结
     all_passed = all(results.values())
     print(f"\n=== 优化验证结果 ===")
-    print(f"总体状态: {'✅ 全部通过' if all_passed else '❌ 需要改进'}")
+    print(f"总体状态: {'正确 全部通过' if all_passed else '错误 需要改进'}")
 
     for check, passed in results.items():
-        status = '✅' if passed else '❌'
+        status = '正确' if passed else '错误'
         print(f"{check.capitalize()}: {status}")
 
     return 0 if all_passed else 1

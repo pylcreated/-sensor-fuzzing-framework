@@ -29,6 +29,7 @@ class MemoryMonitor:
     """Memory monitoring and statistics collector."""
 
     def __init__(self, log_file: str = "memory_stability.log"):
+        """方法说明：执行   init   相关逻辑。"""
         self.log_file = Path(log_file)
         self.readings: List[Dict] = []
         self.start_time = time.time()
@@ -106,6 +107,7 @@ class StabilityTest:
     """Continuous stability testing framework."""
 
     def __init__(self, duration_hours: float = 72.0):
+        """方法说明：执行   init   相关逻辑。"""
         self.duration_hours = duration_hours
         self.duration_seconds = duration_hours * 3600
         self.start_time = time.time()
@@ -252,6 +254,7 @@ class StabilityTest:
 
 
 def main():
+    """方法说明：执行 main 相关逻辑。"""
     parser = argparse.ArgumentParser(description='72-hour memory stability test')
     parser.add_argument('--duration', type=float, default=72.0,
                        help='Test duration in hours (default: 72)')

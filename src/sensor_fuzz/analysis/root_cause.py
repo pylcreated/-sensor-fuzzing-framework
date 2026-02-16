@@ -7,6 +7,7 @@ from typing import Dict, List
 
 def locate_root_cause(events: List[Dict]) -> Dict:
     # Placeholder heuristic: pick first severe event
+    """方法说明：执行 locate root cause 相关逻辑。"""
     for ev in events:
         if ev.get("severity") in {"critical", "high"}:
             return {"root_cause": ev.get("desc", "unknown"), "evidence": ev}

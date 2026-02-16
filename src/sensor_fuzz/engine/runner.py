@@ -57,6 +57,7 @@ class ExecutionEngine:
         checkpoint_path: str = "checkpoints/state.json",
         config_manager: Optional[ConfigManager] = None,
     ) -> None:
+        """方法说明：执行   init   相关逻辑。"""
         self.state: Dict[str, Any] = {}
         self.cfg = cfg
         self.checkpoints = CheckpointStore(checkpoint_path)
@@ -143,6 +144,10 @@ class ExecutionEngine:
         # Acquire connection from pool
         return self._connection_pools[p].acquire()
 
+    def _make_driver(self, proto: str) -> Any:
+        """Backward-compatible driver factory used by legacy tests/callers."""
+        return self._make_sync_driver(proto)
+
     async def _make_async_driver(self, proto: str) -> Any:
         """Create or get an asynchronous driver for the specified protocol."""
         p = proto.lower()
@@ -201,7 +206,10 @@ class ExecutionEngine:
                 sensor_name=sensor_name, protocol=protocol, cfg=self.cfg
             )
 
-        driver = await self._make_driver_async(protocol, async_mode)
+        if async_mode:
+            driver = await self._make_driver_async(protocol, async_mode=True)
+        else:
+            driver = self._make_driver(protocol)
         try:
             cases = self._build_cases(protocol, sensor)
             send_tasks = [self._dispatch_case(driver, c, protocol, sensor_name) for c in cases]
@@ -222,11 +230,13 @@ class ExecutionEngine:
             self._save_checkpoint(None)
         finally:
             # Release connection back to pool
-            self._connection_pools[protocol.lower()].release(driver)
+            if not async_mode and protocol.lower() in self._connection_pools:
+                self._connection_pools[protocol.lower()].release(driver)
 
     def _build_cases(
         self, protocol: str, sensor: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
+        """方法说明：执行  build cases 相关逻辑。"""
         cases: List[Dict[str, Any]] = []
         # Boundary
         for c in generate_boundary_cases(sensor):
@@ -265,6 +275,7 @@ class ExecutionEngine:
         return result
 
     def _save_checkpoint(self, last_case_id: Optional[str]) -> None:
+        """方法说明：执行  save checkpoint 相关逻辑。"""
         ckpt = Checkpoint(
             cases_executed=self.state.get("cases_executed", 0),
             anomalies_found=self.state.get("anomalies", 0),
@@ -274,6 +285,7 @@ class ExecutionEngine:
         self.checkpoints.save(ckpt)
 
     def resume_from_checkpoint(self) -> None:
+        """方法说明：执行 resume from checkpoint 相关逻辑。"""
         if not self.checkpoints.exists():
             return
         ckpt = self.checkpoints.load()
@@ -394,6 +406,7 @@ class ExecutionEngine:
         return False
 
     def stop(self) -> None:
+        """方法说明：执行 stop 相关逻辑。"""
         if hasattr(self, "task_runner"):
             self.task_runner.shutdown()
 
@@ -401,4 +414,5 @@ class ExecutionEngine:
 async def run_full(
     engine: ExecutionEngine, protocol: str, sensor: Dict[str, Any], async_mode: bool = False
 ) -> None:
+    """异步方法说明：执行 run full 相关流程。"""
     await engine.run_suite(protocol, sensor, async_mode)

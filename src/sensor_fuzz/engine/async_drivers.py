@@ -26,6 +26,23 @@ except ImportError:
     serial = None
     aiofiles = None
 
+try:
+    import serial_asyncio
+except ImportError:
+    serial_asyncio = None
+
+
+if not hasattr(asyncio, "open_serial_connection"):
+    async def _open_serial_connection_fallback(*args, **kwargs):
+        if serial_asyncio is None:
+            raise ImportError(
+                "async serial support requires pyserial-asyncio or an asyncio backend "
+                "providing open_serial_connection"
+            )
+        return await serial_asyncio.open_serial_connection(*args, **kwargs)
+
+    asyncio.open_serial_connection = _open_serial_connection_fallback
+
 logger = logging.getLogger(__name__)
 
 
@@ -33,6 +50,7 @@ class AsyncDriver:
     """Base class for asynchronous protocol drivers."""
 
     def __init__(self, **kwargs):
+        """方法说明：执行   init   相关逻辑。"""
         self.connected = False
         self._connection_lock = asyncio.Lock()
 
@@ -75,6 +93,9 @@ class AsyncMqttDriver(AsyncDriver):
     keepalive: int = 60
 
     _client: Optional[aiomqtt.Client] = field(default=None, init=False)
+
+    def __post_init__(self) -> None:
+        super().__init__()
 
     async def _connect_impl(self) -> None:
         """Connect to MQTT broker asynchronously."""
@@ -139,6 +160,9 @@ class AsyncModbusTcpDriver(AsyncDriver):
     retries: int = 3
 
     _client: Optional[AsyncModbusTcpClient] = field(default=None, init=False)
+
+    def __post_init__(self) -> None:
+        super().__init__()
 
     async def _connect_impl(self) -> None:
         """Connect to Modbus TCP server asynchronously."""
@@ -233,9 +257,12 @@ class AsyncUartDriver(AsyncDriver):
     _reader: Optional[asyncio.StreamReader] = field(default=None, init=False)
     _writer: Optional[asyncio.StreamWriter] = field(default=None, init=False)
 
+    def __post_init__(self) -> None:
+        super().__init__()
+
     async def _connect_impl(self) -> None:
         """Open UART connection asynchronously."""
-        if serial is None:
+        if serial is None and not hasattr(asyncio, "open_serial_connection"):
             raise ImportError("pyserial is required for UART support")
 
         try:
@@ -276,7 +303,9 @@ class AsyncUartDriver(AsyncDriver):
 
         try:
             # Write data
-            self._writer.write(data)
+            write_result = self._writer.write(data)
+            if asyncio.iscoroutine(write_result):
+                await write_result
             await self._writer.drain()
 
             # Read response with timeout
@@ -322,6 +351,7 @@ class AsyncDriverPool:
     """Connection pool for async drivers to reuse connections."""
 
     def __init__(self, max_connections: int = 10):
+        """方法说明：执行   init   相关逻辑。"""
         self.max_connections = max_connections
         self._pool: Dict[str, list] = {}
         self._lock = asyncio.Lock()

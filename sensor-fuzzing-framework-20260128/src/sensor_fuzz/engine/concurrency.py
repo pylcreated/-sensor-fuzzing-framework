@@ -18,6 +18,7 @@ class TaskRunner:
     """Run tasks concurrently with bounded thread pool."""
 
     def __init__(self, max_workers: int = 32) -> None:
+        """方法说明：执行   init   相关逻辑。"""
         self._executor = ThreadPoolExecutor(max_workers=max_workers)
         try:
             self._loop = asyncio.get_event_loop()
@@ -28,13 +29,16 @@ class TaskRunner:
             self._loop = loop
 
     async def run_calls(self, funcs: Iterable[Callable[[], Any]]) -> List[Any]:
+        """异步方法说明：执行 run calls 相关流程。"""
         tasks = [self._loop.run_in_executor(self._executor, f) for f in funcs]
         return await asyncio.gather(*tasks)
 
     async def run_coroutines(self, coros: Iterable[Awaitable[Any]]) -> List[Any]:
+        """异步方法说明：执行 run coroutines 相关流程。"""
         return await asyncio.gather(*coros)
 
     def shutdown(self) -> None:
+        """方法说明：执行 shutdown 相关逻辑。"""
         self._executor.shutdown(wait=False)
 
 
@@ -42,10 +46,12 @@ class AsyncBoundedExecutor:
     """Run coroutines with bounded concurrency and optional per-task timeout."""
 
     def __init__(self, max_concurrency: int = 64, task_timeout: Optional[float] = None) -> None:
+        """方法说明：执行   init   相关逻辑。"""
         self._semaphore = asyncio.Semaphore(max(1, max_concurrency))
         self._task_timeout = task_timeout
 
     async def _wrap(self, coro: Awaitable[Any]) -> Any:
+        """异步方法说明：执行  wrap 相关流程。"""
         async with self._semaphore:
             if self._task_timeout:
                 return await asyncio.wait_for(coro, timeout=self._task_timeout)
@@ -69,4 +75,5 @@ class AsyncBoundedExecutor:
         self._semaphore = asyncio.Semaphore(max(1, max_concurrency))
 
     def set_timeout(self, timeout: Optional[float]) -> None:
+        """方法说明：执行 set timeout 相关逻辑。"""
         self._task_timeout = timeout

@@ -11,14 +11,17 @@ except Exception:  # pragma: no cover
 
 
 class ElkSink:
+    """类说明：封装 ElkSink 的相关行为。"""
     def __init__(
         self, host: str = "http://localhost:9200", index: str = "sensor-fuzz-logs"
     ) -> None:
+        """方法说明：执行   init   相关逻辑。"""
         self.index = index
         self._available = Elasticsearch is not None
         self.es = Elasticsearch(hosts=[host]) if self._available else None
 
     def write_logs(self, docs: List[Dict]) -> None:
+        """方法说明：执行 write logs 相关逻辑。"""
         actions = []
         pooled_docs = []
         try:

@@ -1,11 +1,16 @@
+"""模块说明：tests/test_ai.py 的主要实现与辅助逻辑。"""
+
 import numpy as np
 import pytest
 from unittest.mock import patch, MagicMock
 
 import sensor_fuzz.ai as ai
 
+torch = ai.lstm.torch
+
 
 def test_lstm_train_predict_optional_dep():
+    """方法说明：执行 test lstm train predict optional dep 相关逻辑。"""
     data = np.random.rand(8, 5, 4)
     labels = np.random.randint(0, 2, size=(8,))
     if ai.lstm.torch is None:
@@ -18,6 +23,7 @@ def test_lstm_train_predict_optional_dep():
 
 
 def test_genetic_generate():
+    """方法说明：执行 test genetic generate 相关逻辑。"""
     seeds = [ai.TestCase(payload={"a": 1}, fitness=1.0), ai.TestCase(payload={"b": 2}, fitness=0.5)]
     pop = ai.genetic_generate(seeds, population=4, generations=1)
     assert len(pop) == 4

@@ -43,6 +43,7 @@ from .async_drivers import (
 
 
 class Driver(Protocol):
+    """类说明：封装 Driver 的相关行为。"""
     async def send(self, payload: Any) -> Any: ...
 
 
@@ -69,16 +70,20 @@ class RestartlessDriverBase:
     params: Dict[str, Any] = field(default_factory=dict)
 
     def connect(self) -> None:  # pragma: no cover - trivial no-op
+        """方法说明：执行 connect 相关逻辑。"""
         return None
 
     def apply_params(self, params: Dict[str, Any]) -> None:
+        """方法说明：执行 apply params 相关逻辑。"""
         self.params.update(params)
 
     def close(self) -> None:  # pragma: no cover - trivial no-op
+        """方法说明：执行 close 相关逻辑。"""
         return None
 
     async def send(self, payload: bytes) -> Any:  # pragma: no cover - placeholder
         # In real use, send payload over hardware interface
+        """异步方法说明：执行 send 相关流程。"""
         return None
 
 
@@ -106,13 +111,17 @@ def get_driver(protocol: str, async_mode: bool = False, **kwargs) -> Union[Drive
     if async_mode:
         # Return async driver wrapped for compatibility
         class AsyncDriverWrapper:
+            """类说明：封装 AsyncDriverWrapper 的相关行为。"""
             def __init__(self, async_driver: AsyncDriver):
+                """方法说明：执行   init   相关逻辑。"""
                 self.async_driver = async_driver
 
             async def send(self, payload: Any) -> Any:
+                """异步方法说明：执行 send 相关流程。"""
                 return await self.async_driver.send(payload)
 
         async def _create_async():
+            """异步方法说明：执行  create async 相关流程。"""
             driver = await create_async_driver(protocol, **kwargs)
             return AsyncDriverWrapper(driver)
 
@@ -136,45 +145,56 @@ def get_driver(protocol: str, async_mode: bool = False, **kwargs) -> Union[Drive
 
 @dataclass
 class SPIDriver(RestartlessDriverBase):
+    """类说明：封装 SPIDriver 的相关行为。"""
     protocol: str = "spi"
 
     def connect(self) -> None:  # pragma: no cover - placeholder for hardware hook
+        """方法说明：执行 connect 相关逻辑。"""
         return None
 
     def apply_params(self, params: Dict[str, Any]) -> None:
         # In real use, open SPI device (bus/device/mode) and apply clock/bit order
+        """方法说明：执行 apply params 相关逻辑。"""
         super().apply_params(params)
 
 
 @dataclass
 class I2CDriver(RestartlessDriverBase):
+    """类说明：封装 I2CDriver 的相关行为。"""
     protocol: str = "i2c"
 
     def connect(self) -> None:  # pragma: no cover
+        """方法说明：执行 connect 相关逻辑。"""
         return None
 
     def apply_params(self, params: Dict[str, Any]) -> None:
         # In real use, configure bus/address/timeout
+        """方法说明：执行 apply params 相关逻辑。"""
         super().apply_params(params)
 
 
 @dataclass
 class ProfinetDriver(RestartlessDriverBase):
+    """类说明：封装 ProfinetDriver 的相关行为。"""
     protocol: str = "profinet"
 
     def connect(self) -> None:  # pragma: no cover
+        """方法说明：执行 connect 相关逻辑。"""
         return None
 
     def apply_params(self, params: Dict[str, Any]) -> None:
         # In real use, set device name/IP and reconnect session
+        """方法说明：执行 apply params 相关逻辑。"""
         super().apply_params(params)
 
 
 @dataclass
 class HttpDriver:
+    """类说明：封装 HttpDriver 的相关行为。"""
     base_url: str
 
     async def send(self, payload: Dict[str, Any]) -> Any:
+        """异步方法说明：执行 send 相关流程。"""
         method = payload.get("method", "GET")
         path = payload.get("path", "/")
         data = payload.get("data")
@@ -193,6 +213,7 @@ class HttpDriver:
 
 @dataclass
 class MqttDriver:
+    """类说明：封装 MqttDriver 的相关行为。"""
     host: str
     port: int = 1883
     async_mode: bool = False
@@ -216,6 +237,7 @@ class MqttDriver:
                 return {"topic": topic, "payload": msg, "qos": qos}
 
             def _publish():
+                """方法说明：执行  publish 相关逻辑。"""
                 client = mqtt.Client()
                 client.connect(self.host, self.port)
                 result = client.publish(topic, msg, qos=qos)
@@ -227,6 +249,7 @@ class MqttDriver:
 
 @dataclass
 class ModbusTcpDriver:
+    """类说明：封装 ModbusTcpDriver 的相关行为。"""
     host: str
     port: int = 502
     async_mode: bool = False
@@ -250,6 +273,7 @@ class ModbusTcpDriver:
                 return {"unit_id": unit_id, "address": address, "length": length}
 
             def _read():
+                """方法说明：执行  read 相关逻辑。"""
                 client = ModbusClient(
                     host=self.host,
                     port=self.port,
@@ -264,9 +288,11 @@ class ModbusTcpDriver:
 
 @dataclass
 class OpcUaDriver:
+    """类说明：封装 OpcUaDriver 的相关行为。"""
     endpoint: str
 
     async def send(self, payload: Dict[str, Any]) -> Any:
+        """异步方法说明：执行 send 相关流程。"""
         node = payload.get("node")
         value = payload.get("value")
         loop = asyncio.get_event_loop()
@@ -274,6 +300,7 @@ class OpcUaDriver:
             return {"node": node, "value": value}
 
         def _write():
+            """方法说明：执行  write 相关逻辑。"""
             client = OpcUaClient(self.endpoint)
             client.connect()
             try:
@@ -289,6 +316,7 @@ class OpcUaDriver:
 
 @dataclass
 class UartDriver:
+    """类说明：封装 UartDriver 的相关行为。"""
     port: str
     baudrate: int = 9600
     async_mode: bool = False
@@ -309,6 +337,7 @@ class UartDriver:
                 return payload
 
             def _write():
+                """方法说明：执行  write 相关逻辑。"""
                 with serial.Serial(self.port, self.baudrate, timeout=2) as ser:
                     ser.write(payload)
                     ser.flush()

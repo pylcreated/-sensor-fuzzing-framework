@@ -1,3 +1,5 @@
+"""模块说明：tests/test_engine_runner.py 的主要实现与辅助逻辑。"""
+
 import asyncio
 import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
@@ -7,6 +9,7 @@ from sensor_fuzz.config import ConfigLoader, ConfigManager, ConfigError
 
 
 def test_engine_builds_cases(tmp_path):
+    """方法说明：执行 test engine builds cases 相关逻辑。"""
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text(
         """
@@ -36,6 +39,7 @@ sil_mapping:
 
 
 def test_engine_driver_import_guards(tmp_path):
+    """方法说明：执行 test engine driver import guards 相关逻辑。"""
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text(
         """
@@ -64,12 +68,14 @@ sil_mapping:
 
 
 def test_engine_unsupported_protocol():
+    """方法说明：执行 test engine unsupported protocol 相关逻辑。"""
     engine = ExecutionEngine(None)
     with pytest.raises(ValueError):
         engine._make_driver("unknown")
 
 
 def test_runner_compatibility_check(tmp_path):
+    """方法说明：执行 test runner compatibility check 相关逻辑。"""
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text(
         """
@@ -103,6 +109,7 @@ sil_mapping:
 
 
 def test_checkpoint_roundtrip(tmp_path):
+    """方法说明：执行 test checkpoint roundtrip 相关逻辑。"""
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text(
         """
@@ -134,7 +141,9 @@ sil_mapping:
 
 
 class _NoopDriver:
+    """类说明：封装  NoopDriver 的相关行为。"""
     async def send(self, payload):
+        """异步方法说明：执行 send 相关流程。"""
         return payload
 
 

@@ -64,6 +64,7 @@ class GeneticGenerator:
         elitism_rate: float = 0.1,
         max_generations: int = 50,
     ):
+        """方法说明：执行   init   相关逻辑。"""
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
@@ -329,6 +330,7 @@ class RLScorer:
     """Reinforcement learning-based test case scoring."""
 
     def __init__(self, learning_rate: float = 0.01, discount_factor: float = 0.9):
+        """方法说明：执行   init   相关逻辑。"""
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.q_table: Dict[str, Dict[str, float]] = {}

@@ -23,6 +23,7 @@ class ConfigReloader:
         sil_mapping_override: Optional[Dict[str, Any]] = None,
         load_on_start: bool = True,
     ) -> None:
+        """方法说明：执行   init   相关逻辑。"""
         self._path = Path(path)
         self._on_reload = on_reload
         self._interval = interval_sec
@@ -36,6 +37,7 @@ class ConfigReloader:
         self._current: Optional[ConfigSnapshot] = None
 
     def start(self) -> None:
+        """方法说明：执行 start 相关逻辑。"""
         if self._thread and self._thread.is_alive():
             return
         if self._load_on_start:
@@ -58,11 +60,13 @@ class ConfigReloader:
         self._thread.start()
 
     def stop(self) -> None:
+        """方法说明：执行 stop 相关逻辑。"""
         self._stop.set()
         if self._thread:
             self._thread.join(timeout=2)
 
     def update_sil_override(self, sil_mapping: Dict[str, Any]) -> None:
+        """方法说明：执行 update sil override 相关逻辑。"""
         self._sil_override = sil_mapping
         if self._current:
             try:
@@ -75,6 +79,7 @@ class ConfigReloader:
                     self._on_error(exc)
 
     def _loop(self) -> None:
+        """方法说明：执行  loop 相关逻辑。"""
         while not self._stop.is_set():
             try:
                 stat = self._path.stat()
@@ -92,6 +97,7 @@ class ConfigReloader:
             time.sleep(self._interval)
 
     def _reload(self) -> None:
+        """方法说明：执行  reload 相关逻辑。"""
         cfg = self._loader.load(self._path)
         if self._sil_override is not None:
             cfg = self._loader.with_sil_mapping(cfg, self._sil_override)

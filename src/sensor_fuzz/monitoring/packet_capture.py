@@ -13,6 +13,7 @@ except Exception:  # pragma: no cover
 def capture(
     interface: str = "eth0", bpf_filter: Optional[str] = None, limit: int = 10
 ) -> List[str]:
+    """方法说明：执行 capture 相关逻辑。"""
     if pyshark is None:
         return []
     cap = pyshark.LiveCapture(interface=interface, bpf_filter=bpf_filter)
