@@ -1,4 +1,4 @@
-"""Report generation (HTML/PDF) skeleton using Jinja2 + WeasyPrint."""
+"""报告生成模块：支持 HTML 渲染与 PDF 导出。"""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ TEMPLATE_DIR = Path(__file__).parent / "templates"
 
 
 def render_html(context: Dict[str, Any], template: str = "report.html") -> str:
-    """方法说明：执行 render html 相关逻辑。"""
+    """使用模板引擎渲染 HTML 报告。"""
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATE_DIR)), autoescape=select_autoescape()
     )
@@ -26,7 +26,7 @@ def render_html(context: Dict[str, Any], template: str = "report.html") -> str:
 
 
 def export_pdf(html_str: str, output: str | Path) -> Path:
-    """方法说明：执行 export pdf 相关逻辑。"""
+    """将 HTML 内容导出为 PDF 文件。"""
     output_path = Path(output)
     if HTML is None:
         raise ImportError(

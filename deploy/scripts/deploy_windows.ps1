@@ -2,12 +2,17 @@ $ErrorActionPreference = "Stop"
 
 Set-StrictMode -Version Latest
 
+# 说明：本脚本用于 Windows 场景下一键构建并启动 Docker 化测试服务。
+# 设计原则：步骤可复用、失败可中断、错误信息可定位。
+
 function Test-CommandExists {
+	# 功能：检查命令是否存在（如 docker、python）。
 	param([Parameter(Mandatory = $true)][string]$CommandName)
 	return [bool](Get-Command $CommandName -ErrorAction SilentlyContinue)
 }
 
 function Invoke-CheckedCommand {
+	# 功能：统一执行外部命令，并在失败时抛出异常。
 	param(
 		[Parameter(Mandatory = $true)][string]$Command,
 		[Parameter(Mandatory = $true)][string[]]$Arguments,
@@ -26,6 +31,7 @@ function Invoke-CheckedCommand {
 }
 
 function Invoke-DockerPullWithRetry {
+	# 功能：拉取基础镜像并自动重试，降低网络抖动导致的失败率。
 	param(
 		[string]$Image = "python:3.11-slim",
 		[int]$Retries = 3,
@@ -55,6 +61,7 @@ function Invoke-DockerPullWithRetry {
 }
 
 function Install-BaseDeps {
+	# 功能：创建虚拟环境并安装核心依赖。
 	param(
 		[string]$ProjectRoot = $(Join-Path $PSScriptRoot "..\..")
 	)
@@ -66,6 +73,7 @@ function Install-BaseDeps {
 }
 
 function Install-OptionalDeps {
+	# 功能：按需安装可选组件（AI/抓包/报告）。
 	param(
 		[string]$ProjectRoot = $(Join-Path $PSScriptRoot "..\.."),
 		[switch]$AI,
@@ -80,6 +88,7 @@ function Install-OptionalDeps {
 }
 
 function Install-Docker {
+	# 功能：构建本地 Docker 镜像。
 	param(
 		[string]$ProjectRoot = $(Join-Path $PSScriptRoot "..\..")
 	)
@@ -89,6 +98,7 @@ function Install-Docker {
 }
 
 function Start-OneClickDockerFuzz {
+	# 功能：执行一键流程（引擎检查 -> 拉镜像 -> 构建 -> 启动 -> 冒烟测试）。
 	param(
 		[string]$ProjectRoot = $(Join-Path $PSScriptRoot "..\.."),
 		[string]$ComposeFile = "deploy/docker-compose.yml",

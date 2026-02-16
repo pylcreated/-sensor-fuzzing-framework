@@ -1,4 +1,4 @@
-"""Packet capture placeholder using pyshark (requires tshark installed)."""
+"""抓包模块：基于 pyshark 进行在线抓包（依赖 tshark）。"""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ except Exception:  # pragma: no cover
 def capture(
     interface: str = "eth0", bpf_filter: Optional[str] = None, limit: int = 10
 ) -> List[str]:
-    """方法说明：执行 capture 相关逻辑。"""
+    """执行抓包并返回报文字符串列表。"""
     if pyshark is None:
         return []
     cap = pyshark.LiveCapture(interface=interface, bpf_filter=bpf_filter)

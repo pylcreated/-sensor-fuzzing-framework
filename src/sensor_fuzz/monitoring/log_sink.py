@@ -1,4 +1,4 @@
-"""ELK-friendly logging sink placeholder."""
+"""日志落地模块：提供面向 ELK 的批量日志写入能力。"""
 
 from __future__ import annotations
 
@@ -11,11 +11,11 @@ except Exception:  # pragma: no cover
 
 
 class ElkSink:
-    """类说明：封装 ElkSink 的相关行为。"""
+    """ELK 日志写入器：可在 ES 不可用时自动降级。"""
     def __init__(
         self, host: str = "http://localhost:9200", index: str = "sensor-fuzz-logs"
     ) -> None:
-        """方法说明：执行   init   相关逻辑。"""
+        """初始化 ES 连接参数与可用性状态。"""
         self.host = host
         self.index = index
         self._available = Elasticsearch is not None
@@ -27,7 +27,7 @@ class ElkSink:
         self.es = Elasticsearch(hosts=[self.host])
 
     def write_logs(self, docs: List[Dict]) -> None:
-        """方法说明：执行 write logs 相关逻辑。"""
+        """批量写入日志文档，内部复用对象池减少内存分配。"""
         actions = []
         pooled_docs = []
         try:
@@ -55,7 +55,7 @@ class ElkSink:
                 self._release_log_to_pool(log_entry)
 
     def _get_log_from_pool(self):
-        """Get a log dict from pool."""
+        """从日志对象池获取可复用字典。"""
         try:
             from sensor_fuzz.engine.memory_pool import LogObjectPool
             if not hasattr(self, '_log_pool'):
@@ -65,7 +65,7 @@ class ElkSink:
             return {}
 
     def _release_log_to_pool(self, log_entry):
-        """Release log dict back to pool."""
+        """将日志字典归还到对象池。"""
         try:
             if hasattr(self, '_log_pool'):
                 self._log_pool.release(log_entry)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Simple test for genetic algorithm functionality."""
 
 from sensor_fuzz.data_gen.genetic_rl import TestCase, GeneticGenerator
@@ -16,7 +16,7 @@ def test_basic_genetic():
 
     # Initialize population
     generator.initialize_population(sensor_configs, protocols)
-    print(f"✓ Initialized population with {len(generator.population)} test cases")
+    print(f" Initialized population with {len(generator.population)} test cases")
 
     # Test evolution
     execution_results = [
@@ -24,13 +24,13 @@ def test_basic_genetic():
     ]
 
     evolved = generator.evolve(sensor_configs, protocols, execution_results)
-    print(f"✓ Evolution completed, population size: {len(evolved)}")
+    print(f" Evolution completed, population size: {len(evolved)}")
 
     # Check fitness scores
     fitness_scores = [tc.fitness_score for tc in evolved]
-    print(f"✓ Fitness scores range: {min(fitness_scores):.3f} - {max(fitness_scores):.3f}")
+    print(f" Fitness scores range: {min(fitness_scores):.3f} - {max(fitness_scores):.3f}")
 
-    print("✅ Basic genetic algorithm test passed!")
+    print(" Basic genetic algorithm test passed!")
 
 if __name__ == "__main__":
     test_basic_genetic()

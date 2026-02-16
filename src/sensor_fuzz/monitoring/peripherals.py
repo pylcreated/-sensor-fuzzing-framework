@@ -1,4 +1,4 @@
-"""Peripheral and environment monitoring placeholders."""
+"""外设监控模块：采集 GPIO 与环境数据并提供统一监控入口。"""
 
 from __future__ import annotations
 
@@ -8,24 +8,24 @@ import time
 
 
 class GpioMonitor:
-    """类说明：封装 GpioMonitor 的相关行为。"""
+    """GPIO 监控器：读取继电器/指示灯等外设状态。"""
     def __init__(self, provider: str = "mock") -> None:
-        """方法说明：执行   init   相关逻辑。"""
+        """初始化 GPIO 数据提供方。"""
         self.provider = provider
 
     def read_state(self) -> Dict[str, bool]:
-        """方法说明：执行 read state 相关逻辑。"""
+        """读取当前 GPIO 状态。"""
         return {"led": False, "relay": False}
 
 
 class EnvMonitor:
-    """类说明：封装 EnvMonitor 的相关行为。"""
+    """环境监控器：读取温湿度、光照、振动等环境信息。"""
     def __init__(self, provider: str = "mock") -> None:
-        """方法说明：执行   init   相关逻辑。"""
+        """初始化环境数据提供方。"""
         self.provider = provider
 
     def read_env(self) -> Dict[str, float]:
-        """方法说明：执行 read env 相关逻辑。"""
+        """读取当前环境数据。"""
         return {
             "temperature": 25.0,
             "humidity": 50.0,
@@ -35,17 +35,17 @@ class EnvMonitor:
 
 
 class SystemMonitor:
-    """System monitoring manager."""
+    """系统监控管理器：统一调度外设与环境采集。"""
 
     def __init__(self):
-        """方法说明：执行   init   相关逻辑。"""
+        """初始化监控线程与子监控器。"""
         self._running = False
         self._thread: Optional[threading.Thread] = None
         self._gpio_monitor = GpioMonitor()
         self._env_monitor = EnvMonitor()
 
     def start(self) -> None:
-        """Start system monitoring."""
+        """启动系统监控。"""
         if self._running:
             return
 
@@ -54,13 +54,13 @@ class SystemMonitor:
         self._thread.start()
 
     def stop(self) -> None:
-        """Stop system monitoring."""
+        """停止系统监控。"""
         self._running = False
         if self._thread:
             self._thread.join(timeout=1.0)
 
     def _monitor_loop(self) -> None:
-        """Main monitoring loop."""
+        """循环采集外设与环境数据。"""
         while self._running:
             try:
                 # Collect GPIO and environment data
@@ -80,7 +80,7 @@ _system_monitor: Optional[SystemMonitor] = None
 
 
 def start_system_monitor() -> SystemMonitor:
-    """Start the system monitor."""
+    """启动全局系统监控器。"""
     global _system_monitor
     if _system_monitor is None:
         _system_monitor = SystemMonitor()
@@ -89,7 +89,7 @@ def start_system_monitor() -> SystemMonitor:
 
 
 def stop_system_monitor() -> None:
-    """Stop the system monitor."""
+    """停止全局系统监控器。"""
     global _system_monitor
     if _system_monitor:
         _system_monitor.stop()

@@ -1,4 +1,4 @@
-"""Execution engine implementing protocol dispatch, concurrency, checkpoints."""
+"""执行引擎：负责用例构建、协议分发、并发执行与状态持久化。"""
 
 from __future__ import annotations
 
@@ -49,7 +49,7 @@ from sensor_fuzz.monitoring import metrics
 
 
 class ExecutionEngine:
-    """Drive test cases across protocol drivers with basic scheduling."""
+    """测试执行核心：将生成的用例投递到协议驱动并收集结果。"""
 
     def __init__(
         self,
@@ -57,7 +57,7 @@ class ExecutionEngine:
         checkpoint_path: str = "checkpoints/state.json",
         config_manager: Optional[ConfigManager] = None,
     ) -> None:
-        """方法说明：执行   init   相关逻辑。"""
+        """初始化执行状态、并发器、连接池和可选 AI 检测器。"""
         self.state: Dict[str, Any] = {}
         self.cfg = cfg
         self.checkpoints = CheckpointStore(checkpoint_path)
@@ -89,7 +89,7 @@ class ExecutionEngine:
         self.config_manager = config_manager
 
     def _resolve_concurrency_limit(self, cfg: Optional[FrameworkConfig]) -> int:
-        """Derive a safe concurrency limit respecting config and CPU cores."""
+        """根据配置和 CPU 核数计算安全并发上限。"""
         if cfg:
             cfg_value = cfg.strategy.get("concurrency")
             if cfg_value:
@@ -98,7 +98,7 @@ class ExecutionEngine:
         return max(4, cpu_based)
 
     def _make_sync_driver(self, proto: str) -> Any:
-        """Create or get a synchronous driver for the specified protocol."""
+        """创建或复用同步协议驱动（带连接池）。"""
         p = proto.lower()
 
         # Legacy sync mode with connection pooling
@@ -149,7 +149,7 @@ class ExecutionEngine:
         return self._make_sync_driver(proto)
 
     async def _make_async_driver(self, proto: str) -> Any:
-        """Create or get an asynchronous driver for the specified protocol."""
+        """创建异步协议驱动，优先使用异步连接池。"""
         p = proto.lower()
 
         # Use async driver pool for true async I/O
@@ -187,7 +187,7 @@ class ExecutionEngine:
             return self._make_sync_driver(proto)
 
     async def run_suite(self, protocol: str, sensor: Dict[str, Any], async_mode: bool = False) -> None:
-        """Run test suite for a protocol and sensor combination."""
+        """执行单个协议+传感器测试套件并记录指标。"""
         # Determine sensor name for metrics and compatibility checks
         sensor_name = (
             sensor.get("name") or sensor.get("id") or sensor.get("type") or "unknown"
@@ -236,7 +236,7 @@ class ExecutionEngine:
     def _build_cases(
         self, protocol: str, sensor: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
-        """方法说明：执行  build cases 相关逻辑。"""
+        """按策略构建测试用例集合（边界、异常、协议错误、POC 等）。"""
         cases: List[Dict[str, Any]] = []
         # Boundary
         for c in generate_boundary_cases(sensor):
@@ -275,7 +275,7 @@ class ExecutionEngine:
         return result
 
     def _save_checkpoint(self, last_case_id: Optional[str]) -> None:
-        """方法说明：执行  save checkpoint 相关逻辑。"""
+        """保存当前执行进度，支持中断恢复。"""
         ckpt = Checkpoint(
             cases_executed=self.state.get("cases_executed", 0),
             anomalies_found=self.state.get("anomalies", 0),
@@ -285,7 +285,7 @@ class ExecutionEngine:
         self.checkpoints.save(ckpt)
 
     def resume_from_checkpoint(self) -> None:
-        """方法说明：执行 resume from checkpoint 相关逻辑。"""
+        """从检查点恢复执行状态。"""
         if not self.checkpoints.exists():
             return
         ckpt = self.checkpoints.load()

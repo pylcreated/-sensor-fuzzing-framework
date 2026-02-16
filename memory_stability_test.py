@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """72-hour continuous memory stability test for sensor fuzzing framework.
 
 This script runs continuous operations to validate memory leak rate < 0.005%
@@ -301,14 +301,14 @@ def main():
     leak_rate_percent = stats.get('leak_rate_percent', 0)
 
     if peak_memory <= 350:
-        print("✓ Memory usage target met (≤ 350 MB)")
+        print(" Memory usage target met (≤ 350 MB)")
     else:
-        print("✗ Memory usage target failed (> 350 MB)")
+        print(" Memory usage target failed (> 350 MB)")
 
     if abs(leak_rate_percent) < 0.005:
-        print("✓ Memory leak rate acceptable (< 0.005%)")
+        print(" Memory leak rate acceptable (< 0.005%)")
     else:
-        print("✗ Memory leak rate too high (≥ 0.005%)")
+        print(" Memory leak rate too high (≥ 0.005%)")
 
     print(f"\nDetailed report saved to: memory_stability_report.json")
     print(f"Memory log saved to: {test.monitor.log_file}")

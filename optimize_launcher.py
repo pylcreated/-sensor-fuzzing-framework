@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 工业传感器模糊测试框架 - 优化启动器
 快速启动优化过程，执行基础检查和优先级排序
@@ -20,21 +20,21 @@ class OptimizationLauncher:
 
     def run_command(self, cmd: List[str], description: str) -> bool:
         """运行命令并返回成功状态"""
-        print(f"\n🔍 {description}...")
+        print(f"\n {description}...")
         try:
             result = subprocess.run(cmd, cwd=self.project_root,
                                   capture_output=True, text=True, timeout=300)
             success = result.returncode == 0
-            status = "✅" if success else "❌"
+            status = "" if success else ""
             print(f"{status} {description}")
             if not success:
                 print(f"错误输出: {result.stderr[:200]}...")
             return success
         except subprocess.TimeoutExpired:
-            print(f"❌ {description} - 超时")
+            print(f" {description} - 超时")
             return False
         except Exception as e:
-            print(f"❌ {description} - 异常: {e}")
+            print(f" {description} - 异常: {e}")
             return False
 
     def check_code_quality(self) -> bool:
@@ -59,7 +59,7 @@ class OptimizationLauncher:
 
     def analyze_coverage(self) -> Dict[str, Any]:
         """分析测试覆盖率"""
-        print("\n📊 分析测试覆盖率...")
+        print("\n 分析测试覆盖率...")
         coverage_file = self.project_root / "coverage_analysis.json"
 
         # 运行覆盖率分析
@@ -69,7 +69,7 @@ class OptimizationLauncher:
         ], cwd=self.project_root, capture_output=True, text=True)
 
         if result.returncode != 0:
-            print("❌ 覆盖率分析失败")
+            print(" 覆盖率分析失败")
             return {}
 
         # 解析覆盖率数据
@@ -100,12 +100,12 @@ class OptimizationLauncher:
             return coverage_info
 
         except Exception as e:
-            print(f"❌ 解析覆盖率数据失败: {e}")
+            print(f" 解析覆盖率数据失败: {e}")
             return {}
 
     def analyze_performance(self) -> Dict[str, Any]:
         """分析性能基准"""
-        print("\n⚡ 建立性能基准...")
+        print("\n 建立性能基准...")
 
         # 创建简单的性能测试
         perf_script = """
@@ -157,16 +157,16 @@ if __name__ == '__main__':
 
             if result.returncode == 0:
                 perf_data = json.loads(result.stdout)
-                print("✅ 性能基准建立完成")
+                print(" 性能基准建立完成")
                 print(".2f")
                 print(".1f")
                 return perf_data
             else:
-                print("❌ 性能基准测试失败")
+                print(" 性能基准测试失败")
                 return {}
 
         except Exception as e:
-            print(f"❌ 性能分析失败: {e}")
+            print(f" 性能分析失败: {e}")
             return {}
         finally:
             # 清理临时文件
@@ -176,7 +176,7 @@ if __name__ == '__main__':
 
     def generate_optimization_plan(self) -> Dict[str, Any]:
         """生成优化计划"""
-        print("\n📋 生成优化计划...")
+        print("\n 生成优化计划...")
 
         plan = {
             "timestamp": time.time(),
@@ -256,7 +256,7 @@ if __name__ == '__main__':
         with open(report_file, "w", encoding="utf-8") as f:
             json.dump(plan, f, indent=2, ensure_ascii=False)
 
-        print(f"\n📄 优化报告已保存到: {report_file}")
+        print(f"\n 优化报告已保存到: {report_file}")
 
         # 生成人类可读的总结
         summary_file = self.project_root / "OPTIMIZATION_SUMMARY.md"
@@ -264,11 +264,11 @@ if __name__ == '__main__':
             f.write("# 工业传感器模糊测试框架 - 优化评估报告\n\n")
             f.write(f"生成时间: {time.strftime('%Y-%m-%d %H:%M:%S')}\n\n")
 
-            f.write("## 📊 当前状态\n\n")
+            f.write("##  当前状态\n\n")
             status = plan["current_status"]
-            f.write(f"- 代码质量: {'✅ 通过' if status.get('code_quality') else '❌ 需要改进'}\n")
-            f.write(f"- 安全状态: {'✅ 通过' if status.get('security') else '❌ 需要改进'}\n")
-            f.write(f"- 测试状态: {'✅ 通过' if status.get('tests') else '❌ 需要改进'}\n")
+            f.write(f"- 代码质量: {' 通过' if status.get('code_quality') else ' 需要改进'}\n")
+            f.write(f"- 安全状态: {' 通过' if status.get('security') else ' 需要改进'}\n")
+            f.write(f"- 测试状态: {' 通过' if status.get('tests') else ' 需要改进'}\n")
 
             if "coverage" in status and status["coverage"]:
                 cov = status["coverage"]
@@ -283,7 +283,7 @@ if __name__ == '__main__':
                 f.write(f"- 系统资源: {perf['cpu_cores']}核 CPU, {perf['total_memory']:.1f}GB 内存\n")
                 f.write(f"- 基准性能: {perf['execution_time']:.2f}秒执行时间\n")
 
-            f.write("\n## 🎯 优先行动\n\n")
+            f.write("\n##  优先行动\n\n")
             for action in plan.get("priority_actions", []):
                 f.write(f"### {action['phase']} (优先级: {action['priority']})\n")
                 f.write(f"{action['description']}\n\n")
@@ -292,7 +292,7 @@ if __name__ == '__main__':
                     f.write(f"- {item}\n")
                 f.write("\n")
 
-            f.write("## 📋 优化阶段\n\n")
+            f.write("##  优化阶段\n\n")
             for phase in plan.get("optimization_phases", []):
                 f.write(f"### {phase['name']}\n")
                 f.write(f"**时间**: {phase['duration']}\n\n")
@@ -304,18 +304,18 @@ if __name__ == '__main__':
                     f.write(f"- {deliverable}\n")
                 f.write("\n")
 
-        print(f"📄 优化总结已保存到: {summary_file}")
+        print(f" 优化总结已保存到: {summary_file}")
 
 def main():
     """方法说明：执行 main 相关逻辑。"""
-    print("🚀 工业传感器模糊测试框架 - 优化启动器")
+    print(" 工业传感器模糊测试框架 - 优化启动器")
     print("=" * 50)
 
     launcher = OptimizationLauncher()
     plan = launcher.generate_optimization_plan()
     launcher.save_report(plan)
 
-    print("\n🎯 优化评估完成!")
+    print("\n 优化评估完成!")
     print("查看 OPTIMIZATION_SUMMARY.md 获取详细报告")
 
 if __name__ == "__main__":

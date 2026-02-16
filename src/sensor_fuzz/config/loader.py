@@ -1,4 +1,4 @@
-"""Configuration loading, validation, and SIL mapping checks."""
+"""配置加载模块：负责读取、校验与输出框架配置。"""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from sensor_fuzz.config.schema import DEFAULT_SCHEMA
 
 @dataclass
 class FrameworkConfig:
-    """In-memory representation of the framework configuration."""
+    """框架配置的数据模型（内存结构）。"""
 
     protocols: Dict[str, Any]
     sensors: Dict[str, Any]
@@ -27,14 +27,14 @@ class FrameworkConfig:
 
 
 class ConfigLoader:
-    """Load and validate configuration files (YAML/JSON)."""
+    """配置加载器：支持 YAML/JSON 并执行结构与业务校验。"""
 
     def __init__(self, schema: Optional[Dict[str, Any]] = None) -> None:
-        """方法说明：执行   init   相关逻辑。"""
+        """初始化加载器，可注入自定义 Schema。"""
         self._schema = schema or DEFAULT_SCHEMA
 
     def load(self, path: str | Path) -> FrameworkConfig:
-        """Load and validate configuration from file with caching."""
+        """从文件读取并校验配置，利用缓存减少重复解析开销。"""
         path = Path(path)
         mtime = path.stat().st_mtime
         cache_key = f"{path}:{mtime}"
@@ -43,7 +43,7 @@ class ConfigLoader:
 
     @lru_cache(maxsize=16)
     def _load_cached(self, cache_key: str, path_str: str) -> FrameworkConfig:
-        """Cached configuration loading."""
+        """实际执行配置读取与校验的缓存方法。"""
         path = Path(path_str)
         suffix = path.suffix.lower()
         if suffix not in {".json", ".yml", ".yaml"}:
@@ -86,7 +86,7 @@ class ConfigLoader:
         )
 
     def dump(self, config: FrameworkConfig, path: str | Path) -> None:
-        """方法说明：执行 dump 相关逻辑。"""
+        """将配置对象写回文件（YAML 或 JSON）。"""
         payload = {
             "protocols": config.protocols,
             "sensors": config.sensors,
@@ -115,7 +115,7 @@ class ConfigLoader:
 
     @staticmethod
     def _validate_sil_mapping(sil_mapping: Dict[str, Any]) -> None:
-        """方法说明：执行  validate sil mapping 相关逻辑。"""
+        """校验 SIL 映射参数是否满足范围约束。"""
         for level, cfg in sil_mapping.items():
             if not level.startswith("SIL"):
                 raise ValueError(f"Invalid SIL level key: {level}")
@@ -132,7 +132,7 @@ class ConfigLoader:
     @staticmethod
     def _validate_protocols(protocols: Dict[str, Any]) -> None:
         # Ensure restartless switch flags are boolean when provided
-        """方法说明：执行  validate protocols 相关逻辑。"""
+        """校验协议配置参数的类型与取值范围。"""
         for name in ("profinet", "i2c", "spi"):
             cfg = protocols.get(name)
             if cfg is None:
@@ -162,7 +162,7 @@ class ConfigLoader:
 
     @staticmethod
     def _validate_sensors(sensors: Dict[str, Any], protocols: Dict[str, Any]) -> None:
-        """方法说明：执行  validate sensors 相关逻辑。"""
+        """校验传感器与协议映射关系是否合法。"""
         for name, cfg in sensors.items():
             protocol = cfg.get("protocol")
             if protocol and protocol not in protocols:
@@ -178,16 +178,16 @@ class ConfigLoader:
 
 
 class ConfigSnapshot:
-    """Serializable snapshot of configuration with metadata."""
+    """可序列化的配置快照，包含加载时间等元数据。"""
 
     def __init__(self, config: FrameworkConfig, path: Path) -> None:
-        """方法说明：执行   init   相关逻辑。"""
+        """初始化配置快照对象。"""
         self.config = config
         self.path = path
         self.loaded_at = datetime.now(timezone.utc)
 
     def to_dict(self) -> Dict[str, Any]:
-        """方法说明：执行 to dict 相关逻辑。"""
+        """将快照转为字典，便于日志记录和持久化。"""
         return {
             "path": str(self.path),
             "loaded_at": self.loaded_at.isoformat() + "Z",

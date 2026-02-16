@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Memory optimization validation script for sensor fuzzing framework.
 
 This script validates memory usage improvements through object pooling,
@@ -122,9 +122,9 @@ def test_memory_leak_detection():
         print(f"Estimated leak rate: {leak_rate:.6f} MB per 500 iterations")
 
         if leak_rate < 0.005:  # Less than 0.005 MB per 500 iterations
-            print("✓ Memory leak rate within acceptable limits (< 0.005%)")
+            print(" Memory leak rate within acceptable limits (< 0.005%)")
         else:
-            print("✗ Memory leak rate exceeds acceptable limits")
+            print(" Memory leak rate exceeds acceptable limits")
 
     return memory_readings
 
@@ -153,14 +153,14 @@ def main():
             print(f"Peak memory usage: {peak_memory:.2f} MB")
 
             if peak_memory <= 350:
-                print("✓ Memory usage within target limits (≤ 350 MB)")
+                print(" Memory usage within target limits (≤ 350 MB)")
             else:
-                print("✗ Memory usage exceeds target limits (> 350 MB)")
+                print(" Memory usage exceeds target limits (> 350 MB)")
 
         if net_increase < 50:  # Reasonable increase for object pools
-            print("✓ Object pool memory overhead acceptable")
+            print(" Object pool memory overhead acceptable")
         else:
-            print("✗ Object pool memory overhead too high")
+            print(" Object pool memory overhead too high")
 
         print("\nOptimization components validated:")
         print("- Object pools for test cases, connections, and logs")

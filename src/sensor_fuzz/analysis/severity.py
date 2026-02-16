@@ -1,4 +1,4 @@
-"""Defect severity mapping per IEC61508 style levels."""
+"""严重度分析模块：按规则将缺陷映射为严重等级。"""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ LEVELS = {
 
 
 def classify(defect: Dict) -> str:
-    """方法说明：执行 classify 相关逻辑。"""
+    """根据缺陷特征判定严重度等级。"""
     category = defect.get("category", "")
     if category == "safety" or defect.get("deadlock"):
         return "critical"

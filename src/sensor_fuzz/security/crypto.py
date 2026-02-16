@@ -1,4 +1,4 @@
-"""AES-256 encryption helpers (skeleton)."""
+"""加密工具模块：提供基于 AES-256-GCM 的加解密能力。"""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
 def _derive_key(password: str, salt: bytes) -> bytes:
-    """方法说明：执行  derive key 相关逻辑。"""
+    """基于口令和盐派生 32 字节对称密钥。"""
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,
@@ -24,7 +24,7 @@ def _derive_key(password: str, salt: bytes) -> bytes:
 
 
 def encrypt(data: bytes, password: str) -> Tuple[bytes, bytes, bytes]:
-    """Encrypt data with AES-256-GCM. Returns (salt, iv, ciphertext)."""
+    """使用 AES-256-GCM 加密，返回 (salt, iv, payload)。"""
     salt = os.urandom(16)
     iv = os.urandom(12)
     key = _derive_key(password, salt)
@@ -36,7 +36,7 @@ def encrypt(data: bytes, password: str) -> Tuple[bytes, bytes, bytes]:
 
 
 def decrypt(salt: bytes, iv: bytes, payload: bytes, password: str) -> bytes:
-    """Decrypt data produced by encrypt()."""
+    """解密由 encrypt 生成的密文载荷。"""
     tag, ciphertext = payload[:16], payload[16:]
     key = _derive_key(password, salt)
     decryptor = Cipher(

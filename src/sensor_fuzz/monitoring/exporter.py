@@ -1,4 +1,4 @@
-"""Enhanced Prometheus exporter with web dashboard."""
+﻿"""指标导出模块：提供 Prometheus 指标与 Web 监控看板。"""
 
 from __future__ import annotations
 
@@ -18,10 +18,10 @@ except ImportError:
 
 
 class DashboardHandler(BaseHTTPRequestHandler):
-    """Web dashboard handler for real-time monitoring."""
+    """看板请求处理器：对外提供页面与 API。"""
 
     def __init__(self, *args, dashboard_data=None, **kwargs):
-        """方法说明：执行   init   相关逻辑。"""
+        """初始化看板数据上下文。"""
         self.dashboard_data = dashboard_data or {}
         super().__init__(*args, **kwargs)
 
@@ -191,7 +191,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 工业传感器模糊测试监控面板</h1>
+            <h1>工业传感器模糊测试监控面板</h1>
             <p>实时监控测试执行状态和系统性能</p>
             <button class="refresh-btn" onclick="refreshData()">刷新数据</button>
         </div>
@@ -269,7 +269,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
             // Update system status
             const statusDiv = document.getElementById('system-status');
-            const aiStatus = data.ai.enabled ? '✓ 已启用' : '✗ 未启用';
+            const aiStatus = data.ai.enabled ? ' 已启用' : ' 未启用';
             const healthClass = data.performance.cpu_usage > 90 ? 'status-error' :
                               data.performance.cpu_usage > 70 ? 'status-warning' :
                               'status-healthy';
@@ -277,7 +277,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             statusDiv.innerHTML = `
                 <p><strong>AI状态:</strong> ${{aiStatus}}</p>
                 <p><strong>系统健康:</strong> <span class="${{healthClass}}">${{healthClass
-                    'status-healthy' ?
+                    === 'status-healthy' ?
                 '正常' : healthClass === 'status-warning' ? '警告' : '异常'}}</span></p>
                 <p><strong>最后更新:</strong> ${{new Date(data.timestamp * 1000)
                     .toLocaleString('zh-CN')}}</p>
@@ -303,7 +303,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
 
 class EnhancedMetricsExporter:
-    """Enhanced metrics exporter with dashboard."""
+    """增强型指标导出器：同时启动 Prometheus 与 Dashboard 服务。"""
 
     def __init__(
         self,
@@ -311,7 +311,7 @@ class EnhancedMetricsExporter:
         dashboard_port: int = 8080,
         dashboard_host: str = "localhost"
     ):
-        """方法说明：执行   init   相关逻辑。"""
+        """初始化服务端口、宿主机与线程句柄。"""
         self.port = port
         self.dashboard_port = dashboard_port
         self.dashboard_host = dashboard_host
@@ -328,9 +328,9 @@ class EnhancedMetricsExporter:
 
         # Start dashboard server
         def run_dashboard():
-            """方法说明：执行 run dashboard 相关逻辑。"""
+            """运行 Dashboard HTTP 服务。"""
             def handler_class(*args, **kwargs):
-                """方法说明：执行 handler class 相关逻辑。"""
+                """注入共享数据后的请求处理器工厂。"""
                 return DashboardHandler(
                     *args, dashboard_data=self.dashboard_data, **kwargs
                 )

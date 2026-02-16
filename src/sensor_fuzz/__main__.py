@@ -1,4 +1,4 @@
-"""Entry point with comprehensive error handling and graceful shutdown."""
+"""项目主入口：负责启动、执行、合规校验与优雅退出。"""
 
 from __future__ import annotations
 
@@ -17,19 +17,19 @@ from sensor_fuzz.monitoring import start_system_monitor, stop_system_monitor, st
 
 
 class ApplicationError(Exception):
-    """Application-specific error with exit code."""
+    """应用级异常，携带退出码，便于统一退出控制。"""
 
     def __init__(self, message: str, exit_code: int = 1):
-        """方法说明：执行   init   相关逻辑。"""
+        """初始化异常信息和退出码。"""
         super().__init__(message)
         self.exit_code = exit_code
 
 
 def setup_signal_handlers() -> None:
-    """Setup signal handlers for graceful shutdown."""
+    """注册系统信号处理器，确保程序可优雅退出。"""
 
     def signal_handler(signum, frame):
-        """方法说明：执行 signal handler 相关逻辑。"""
+        """收到中断/终止信号时，记录日志并触发退出。"""
         logger = logging.getLogger(__name__)
         logger.info(f"Received signal {signum}, initiating graceful shutdown...")
         sys.exit(0)
@@ -39,7 +39,7 @@ def setup_signal_handlers() -> None:
 
 
 def validate_config_file(config_path: str) -> Path:
-    """Validate configuration file exists and is readable."""
+    """校验配置文件存在且可读，避免启动后才报错。"""
     path = Path(config_path)
     if not path.exists():
         raise ApplicationError(f"Configuration file not found: {config_path}", 2)
@@ -54,7 +54,7 @@ def validate_config_file(config_path: str) -> Path:
 
 
 def main() -> NoReturn:
-    """Main application entry point with comprehensive error handling."""
+    """主执行流程：初始化 -> 加载配置 -> 运行测试 -> 合规校验 -> 资源回收。"""
     exit_code = 0
     reloader = None
 
@@ -131,7 +131,7 @@ def main() -> NoReturn:
 
         # Setup configuration reloader
         def _on_reload(snapshot):
-            """方法说明：执行  on reload 相关逻辑。"""
+            """配置热更新回调：将新配置快照同步到运行态。"""
             try:
                 # Apply new config to engine
                 engine.state["config_reload"] = snapshot.to_dict()
@@ -188,18 +188,18 @@ def main() -> NoReturn:
 
                     # Run SIL compliance validation in async context
                     async def run_sil_validation():
-                        """异步方法说明：执行 run sil validation 相关流程。"""
+                        """异步执行 SIL 合规校验并落盘报告。"""
                         compliance_report = await sil_manager.generate_compliance_report(
                             sil_level, test_results, system_config
                         )
 
                         logger.info(f"Generated SIL compliance report with score: {compliance_report.compliance_score:.1f}")
                         if compliance_report.overall_compliance:
-                            logger.info(f"✅ System meets SIL{sil_level.value} compliance requirements")
+                            logger.info(f"System meets SIL{sil_level.value} compliance requirements")
                         else:
-                            logger.warning(f"⚠️  System does not fully meet SIL{sil_level.value} requirements")
+                            logger.warning(f"System does not fully meet SIL{sil_level.value} requirements")
                             for issue in compliance_report.critical_issues:
-                                logger.warning(f"  • {issue}")
+                                logger.warning(f"  - {issue}")
 
                         # Save compliance report
                         import json
