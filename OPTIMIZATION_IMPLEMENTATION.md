@@ -1,47 +1,25 @@
 工业传感器模糊测试框架 - 实施计划
 
-快速启动指南
+## 快速启动指南
 
-立即可行的优化 (本周内完成)
-
-1. 测试覆盖率快速提升
+### 立即可行的优化
+1. 测试覆盖率快速提升:
 ```bash
-# 识别低覆盖率文件
-python -m pytest --cov=src/sensor_fuzz --cov-report=term-missing | grep -E "(50%|43%|63%)"
-
-# 优先测试核心模块
-python -m pytest tests/test_main.py -v --cov=src/sensor_fuzz/__main__.py --cov-report=term-missing
+python -m pytest --cov=src/sensor_fuzz --cov-report=term-missing
 ```
-
-2. 性能基准建立
-```bash
-# 创建性能基准测试
-python -c "
-import time
+2. 性能基准建立:
+```python
 from src.sensor_fuzz.engine.runner import FuzzingRunner
-
-# 基准测试
+import time
 start = time.time()
 runner = FuzzingRunner()
-# 执行标准测试用例
 duration = time.time() - start
 print(f'基准性能: {duration:.2f}秒')
-"
 ```
-
-3. 内存使用分析
+3. 内存使用分析:
 ```bash
-# 内存分析
-python -c "
-import tracemalloc
-tracemalloc.start()
-
-from src.sensor_fuzz import main
-# 执行测试
-current, peak = tracemalloc.get_traced_memory()
-print(f'当前内存: {current / 1024**2:.1f}MB')
-print(f'峰值内存: {peak / 1024**2:.1f}MB')
-"
+mprof run python -m pytest
+mprof plot
 ```
 
 ---
