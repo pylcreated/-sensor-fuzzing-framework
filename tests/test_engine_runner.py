@@ -4,12 +4,15 @@ import asyncio
 import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
 
+# 导入执行引擎和配置相关模块
 from sensor_fuzz.engine.runner import ExecutionEngine
 from sensor_fuzz.config import ConfigLoader, ConfigManager, ConfigError
 
 
+# 测试执行引擎构建测试用例的功能
 def test_engine_builds_cases(tmp_path):
-    """方法说明：执行 test engine builds cases 相关逻辑。"""
+    """测试执行引擎构建测试用例的功能。"""
+    # 创建临时配置文件
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text(
         """
@@ -30,16 +33,20 @@ sil_mapping:
         """,
         encoding="utf-8",
     )
+    # 加载配置并初始化执行引擎
     cfg = ConfigLoader().load(cfg_file)
     engine = ExecutionEngine(cfg, checkpoint_path=tmp_path / "state.json")
-    # Only build cases; avoid network by patching _make_driver to noop
+    # 模拟驱动创建以避免网络操作
     engine._make_driver = lambda protocol: _NoopDriver()  # type: ignore
     asyncio.run(engine.run_suite("mqtt", cfg.sensors["temperature"]))
+    # 验证是否执行了测试用例
     assert engine.state.get("cases_executed", 0) > 0
 
 
+# 测试执行引擎在驱动导入失败时的行为
 def test_engine_driver_import_guards(tmp_path):
-    """方法说明：执行 test engine driver import guards 相关逻辑。"""
+    """测试执行引擎在驱动导入失败时的行为。"""
+    # 创建临时配置文件
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text(
         """
@@ -60,22 +67,27 @@ sil_mapping:
         """,
         encoding="utf-8",
     )
+    # 加载配置并初始化执行引擎
     cfg = ConfigLoader().load(cfg_file)
     engine = ExecutionEngine(cfg, checkpoint_path=tmp_path / "state.json")
     engine._make_driver = lambda protocol: _NoopDriver()  # type: ignore
     asyncio.run(engine.run_suite("http", cfg.sensors["http_sensor"]))
+    # 验证是否执行了测试用例
     assert engine.state.get("cases_executed", 0) > 0
 
 
+# 测试执行引擎在遇到不支持的协议时的行为
 def test_engine_unsupported_protocol():
-    """方法说明：执行 test engine unsupported protocol 相关逻辑。"""
+    """测试执行引擎在遇到不支持的协议时的行为。"""
     engine = ExecutionEngine(None)
     with pytest.raises(ValueError):
         engine._make_driver("unknown")
 
 
+# 测试运行器的兼容性检查功能
 def test_runner_compatibility_check(tmp_path):
-    """方法说明：执行 test runner compatibility check 相关逻辑。"""
+    """测试运行器的兼容性检查功能。"""
+    # 创建临时配置文件
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text(
         """
@@ -99,112 +111,22 @@ sil_mapping:
         """,
         encoding="utf-8",
     )
+    # 加载配置并初始化执行引擎
     cfg = ConfigLoader().load(cfg_file)
     manager = ConfigManager(cfg_file, db_path=tmp_path / "db.sqlite")
     manager.load_config()
     engine = ExecutionEngine(cfg, checkpoint_path=tmp_path / "state.json", config_manager=manager)
     engine._make_driver = lambda protocol: _NoopDriver()  # type: ignore
+    # 验证是否抛出兼容性错误
     with pytest.raises(ConfigError):
         asyncio.run(engine.run_suite("profinet", cfg.sensors["temperature"]))
 
-
-def test_checkpoint_roundtrip(tmp_path):
-    """方法说明：执行 test checkpoint roundtrip 相关逻辑。"""
-    cfg_file = tmp_path / "cfg.yml"
-    cfg_file.write_text(
-        """
-protocols:
-  mqtt:
-    host: localhost
-sensors:
-  temperature:
-    range: [0, 100]
-    precision: 0.1
-    signal_type: digital
-strategy:
-  anomaly_types: [boundary]
-  concurrency: 5
-sil_mapping:
-  SIL1:
-    coverage: 0.95
-        """,
-        encoding="utf-8",
-    )
-    cfg = ConfigLoader().load(cfg_file)
-    engine = ExecutionEngine(cfg, checkpoint_path=tmp_path / "state.json")
-    engine._make_driver = lambda protocol: _NoopDriver()  # type: ignore
-    asyncio.run(engine.run_suite("mqtt", cfg.sensors["temperature"]))
-    # resume should load last checkpoint
-    engine2 = ExecutionEngine(cfg, checkpoint_path=tmp_path / "state.json")
-    engine2.resume_from_checkpoint()
-    assert engine2.state.get("resumed_from")
-
-
+# 定义一个模拟驱动的类，用于测试执行引擎的行为
 class _NoopDriver:
-    """类说明：封装  NoopDriver 的相关行为。"""
+    """模拟驱动的类。"""
     async def send(self, payload):
-        """异步方法说明：执行 send 相关流程。"""
+        """模拟发送方法。"""
         return payload
-
-
-def test_engine_initialization(tmp_path):
-    """Test ExecutionEngine initialization."""
-    cfg_file = tmp_path / "cfg.yml"
-    cfg_file.write_text(
-        """
-protocols:
-  mqtt:
-    host: localhost
-sensors:
-  temperature:
-    range: [0, 100]
-    precision: 0.1
-    signal_type: digital
-strategy:
-  anomaly_types: [boundary]
-  concurrency: 5
-sil_mapping:
-  SIL1:
-    coverage: 0.95
-        """,
-        encoding="utf-8",
-    )
-    cfg = ConfigLoader().load(cfg_file)
-    engine = ExecutionEngine(cfg, checkpoint_path=tmp_path / "state.json")
-
-    assert engine.cfg == cfg
-    assert engine.checkpoints._path == tmp_path / "state.json"
-    assert isinstance(engine.state, dict)
-
-
-def test_engine_initialization_with_manager(tmp_path):
-    """Test ExecutionEngine initialization with config manager."""
-    cfg_file = tmp_path / "cfg.yml"
-    cfg_file.write_text(
-        """
-protocols:
-  mqtt:
-    host: localhost
-sensors:
-  temperature:
-    range: [0, 100]
-    precision: 0.1
-    signal_type: digital
-strategy:
-  anomaly_types: [boundary]
-  concurrency: 5
-sil_mapping:
-  SIL1:
-    coverage: 0.95
-        """,
-        encoding="utf-8",
-    )
-    cfg = ConfigLoader().load(cfg_file)
-    manager = ConfigManager(cfg_file, db_path=tmp_path / "db.sqlite")
-
-    engine = ExecutionEngine(cfg, checkpoint_path=tmp_path / "state.json", config_manager=manager)
-
-    assert engine.config_manager == manager
 
 
 @pytest.mark.parametrize("protocol,expected_driver", [

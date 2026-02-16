@@ -4,6 +4,7 @@ import pytest
 import numpy as np
 from unittest.mock import MagicMock, patch
 
+# 导入遗传算法和强化学习相关模块
 from sensor_fuzz.data_gen.genetic_rl import (
     TestCase,
     GeneticGenerator,
@@ -12,15 +13,17 @@ from sensor_fuzz.data_gen.genetic_rl import (
     rl_score,
 )
 
-
+# 定义测试TestCase类功能的测试类
 class TestTestCase:
-    """Test TestCase class functionality."""
+    """测试TestCase类功能。"""
 
     def test_test_case_creation(self):
-        """Test basic TestCase creation."""
+        """测试TestCase的基本创建。"""
+        # 定义传感器配置和变异信息
         sensor_config = {"range": [0, 10], "signal_type": "voltage"}
         mutations = [{"desc": "boundary", "value": 10.1}]
 
+        # 创建TestCase实例并验证其属性
         tc = TestCase(
             sensor_config=sensor_config,
             protocol="mqtt",
@@ -34,7 +37,8 @@ class TestTestCase:
         assert tc.fitness_score == 0.8
 
     def test_test_case_to_dict(self):
-        """Test serialization to dictionary."""
+        """测试TestCase的序列化为字典。"""
+        # 创建TestCase实例
         tc = TestCase(
             sensor_config={"range": [0, 10]},
             protocol="mqtt",
@@ -45,6 +49,7 @@ class TestTestCase:
             generation=5,
         )
 
+        # 验证序列化结果
         data = tc.to_dict()
         assert data["sensor_config"] == {"range": [0, 10]}
         assert data["protocol"] == "mqtt"
@@ -54,7 +59,8 @@ class TestTestCase:
         assert data["generation"] == 5
 
     def test_test_case_from_dict(self):
-        """Test deserialization from dictionary."""
+        """测试从字典反序列化为TestCase。"""
+        # 定义字典数据
         data = {
             "sensor_config": {"range": [0, 10]},
             "protocol": "mqtt",
@@ -65,6 +71,7 @@ class TestTestCase:
             "generation": 5,
         }
 
+        # 验证反序列化结果
         tc = TestCase.from_dict(data)
         assert tc.sensor_config == {"range": [0, 10]}
         assert tc.protocol == "mqtt"
@@ -73,12 +80,13 @@ class TestTestCase:
         assert tc.anomaly_probability == 0.6
         assert tc.generation == 5
 
-
+# 定义测试GeneticGenerator功能的测试类
 class TestGeneticGenerator:
-    """Test GeneticGenerator functionality."""
+    """测试GeneticGenerator功能。"""
 
     def test_generator_initialization(self):
-        """Test genetic generator initialization."""
+        """测试遗传生成器的初始化。"""
+        # 创建生成器实例并验证其属性
         generator = GeneticGenerator(
             population_size=50,
             mutation_rate=0.1,
@@ -94,13 +102,15 @@ class TestGeneticGenerator:
         assert len(generator.population) == 0
 
     def test_population_initialization(self):
-        """Test population initialization."""
+        """测试种群初始化。"""
+        # 定义传感器配置和协议
         sensor_configs = [
             {"range": [0, 10], "signal_type": "voltage"},
             {"range": [4, 20], "signal_type": "current"},
         ]
         protocols = ["mqtt", "modbus"]
 
+        # 初始化种群并验证其属性
         generator = GeneticGenerator(population_size=10)
         generator.initialize_population(sensor_configs, protocols)
 
@@ -112,13 +122,15 @@ class TestGeneticGenerator:
             assert tc.generation == 0
 
     def test_fitness_evaluation(self):
-        """Test fitness evaluation."""
+        """测试适应度评估。"""
+        # 定义执行结果
         generator = GeneticGenerator()
         execution_results = [
             {"protocol": "mqtt", "error_type": "timeout", "code_path": "send", "success": True},
             {"protocol": "mqtt", "error_type": "crc", "code_path": "receive", "success": False},
         ]
 
+        # 创建测试用例并评估适应度
         tc = TestCase(
             sensor_config={"range": [0, 10]},
             protocol="mqtt",
@@ -127,6 +139,7 @@ class TestGeneticGenerator:
 
         generator._evaluate_fitness(tc, execution_results)
 
+        # 验证适应度分数和覆盖率是否在合理范围内
         assert tc.fitness_score >= 0.0
         assert tc.coverage >= 0.0
         assert tc.fitness_score <= 1.0

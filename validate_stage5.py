@@ -8,6 +8,11 @@ import asyncio
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
+# 检查SIL合规性模块的函数
+# 该函数尝试导入相关模块并测试其功能是否正常
+# 包括SIL等级枚举和SIL要求的测试
+# 如果模块导入失败或测试失败，将返回False
+# 否则返回True
 def check_sil_module():
     """检查SIL合规性模块。"""
     print("🔍 检查SIL合规性模块...")
@@ -49,6 +54,10 @@ def check_sil_module():
 
     return True
 
+# 检查配置文件更新的函数
+# 该函数读取配置文件并检查其中的关键字段是否存在
+# 如果字段缺失或读取失败，将返回False
+# 否则返回True
 def check_config_updates():
     """检查配置文件更新。"""
     print("\n🔍 检查配置文件更新...")
@@ -86,6 +95,10 @@ def check_config_updates():
         print(f"❌ 配置文件检查失败: {e}")
         return False
 
+# 检查主程序集成的函数
+# 该函数读取主程序文件并检查是否包含必要的导入和初始化代码
+# 如果缺少关键代码或读取失败，将返回False
+# 否则返回True
 def check_main_integration():
     """检查主程序集成。"""
     print("\n🔍 检查主程序集成...")
@@ -127,6 +140,9 @@ def check_main_integration():
         print(f"❌ 主程序检查失败: {e}")
         return False
 
+# 测试SIL验证功能的异步函数
+# 该函数模拟系统配置和测试结果，调用SIL管理器进行验证
+# 并输出验证结果和合规性报告
 async def test_sil_validation():
     """测试SIL验证功能。"""
     print("\n🔍 测试SIL验证功能...")

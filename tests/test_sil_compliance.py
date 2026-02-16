@@ -5,6 +5,7 @@ import pytest
 import asyncio
 from unittest.mock import Mock, patch
 
+# 导入SIL合规性相关模块
 from sensor_fuzz.sil_compliance import (
     SILComplianceManager,
     SafetyIntegrityLevel,
@@ -14,11 +15,13 @@ from sensor_fuzz.sil_compliance import (
 )
 
 
+# 定义测试SIL要求的测试类
 class TestSILRequirements:
     """测试SIL要求"""
 
     def test_get_sil1_requirements(self):
         """测试SIL1要求"""
+        # 获取SIL1的要求并验证其属性
         req = SILRequirements.get_requirements(SafetyIntegrityLevel.SIL1)
 
         assert req.sil_level == SafetyIntegrityLevel.SIL1
@@ -31,6 +34,7 @@ class TestSILRequirements:
 
     def test_get_sil4_requirements(self):
         """测试SIL4要求"""
+        # 获取SIL4的要求并验证其属性
         req = SILRequirements.get_requirements(SafetyIntegrityLevel.SIL4)
 
         assert req.sil_level == SafetyIntegrityLevel.SIL4
@@ -42,6 +46,7 @@ class TestSILRequirements:
         assert req.redundancy_required is True
 
 
+# 定义测试SIL合规性验证器的测试类
 class TestSILComplianceValidator:
     """测试SIL合规性验证器"""
 
@@ -53,6 +58,7 @@ class TestSILComplianceValidator:
     @pytest.mark.asyncio
     async def test_validate_sil1_compliance_success(self, validator):
         """测试SIL1合规性验证成功"""
+        # 定义测试结果和系统配置
         test_results = {
             "coverage": 0.95,
             "duration_hours": 30,
@@ -68,10 +74,12 @@ class TestSILComplianceValidator:
             "redundancy_enabled": False
         }
 
+        # 验证SIL1合规性
         report = await validator.validate_sil_compliance(
             SafetyIntegrityLevel.SIL1, test_results, system_config
         )
 
+        # 验证报告的属性
         assert isinstance(report, SILComplianceReport)
         assert report.sil_level == SafetyIntegrityLevel.SIL1
         assert report.overall_compliance is True
@@ -80,6 +88,7 @@ class TestSILComplianceValidator:
     @pytest.mark.asyncio
     async def test_validate_sil4_compliance_failure(self, validator):
         """测试SIL4合规性验证失败"""
+        # 定义测试结果和系统配置（不满足SIL4要求）
         test_results = {
             "coverage": 0.90,  # SIL4需要0.99
             "duration_hours": 100,  # SIL4需要168
@@ -95,10 +104,12 @@ class TestSILComplianceValidator:
             "redundancy_enabled": False  # SIL4需要冗余
         }
 
+        # 验证SIL4合规性
         report = await validator.validate_sil_compliance(
             SafetyIntegrityLevel.SIL4, test_results, system_config
         )
 
+        # 验证报告的属性
         assert isinstance(report, SILComplianceReport)
         assert report.sil_level == SafetyIntegrityLevel.SIL4
         assert report.overall_compliance is False
@@ -106,6 +117,7 @@ class TestSILComplianceValidator:
         assert len(report.critical_issues) > 0
 
 
+# 定义测试SIL合规性管理器的测试类
 class TestSILComplianceManager:
     """测试SIL合规性管理器"""
 
@@ -189,6 +201,7 @@ class TestSILComplianceManager:
         assert hasattr(report, 'critical_issues')
 
 
+# 定义测试SIL合规性报告的测试类
 class TestSILComplianceReport:
     """测试SIL合规性报告"""
 

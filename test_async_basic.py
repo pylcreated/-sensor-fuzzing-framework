@@ -6,37 +6,27 @@ import sys
 import os
 import pytest
 
-# Add src to path
+# 将src目录添加到Python路径中
+# 这样可以导入src目录下的模块
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
+# 导入异步驱动模块
 from sensor_fuzz.engine.async_drivers import AsyncMqttDriver, AsyncModbusTcpDriver, AsyncUartDriver
 
-
+# 使用pytest标记异步测试
+# 测试异步驱动的基本功能
 @pytest.mark.asyncio
 async def test_async_drivers():
-    """Test async drivers basic functionality."""
-    print("Testing async drivers...")
+    """测试异步驱动的基本功能。"""
+    # 创建异步驱动实例并测试其行为
+    mqtt_driver = AsyncMqttDriver(host="localhost", port=1883)
+    modbus_driver = AsyncModbusTcpDriver(host="localhost", port=502)
+    uart_driver = AsyncUartDriver(port="COM1", baudrate=9600)
 
-    # Test MQTT driver creation (without actual connection)
-    try:
-        mqtt_driver = AsyncMqttDriver(host="localhost", port=1883)
-        print("✓ AsyncMqttDriver created successfully")
-    except Exception as e:
-        print(f"✗ AsyncMqttDriver creation failed: {e}")
-
-    # Test Modbus driver creation
-    try:
-        modbus_driver = AsyncModbusTcpDriver(host="localhost", port=502)
-        print("✓ AsyncModbusTcpDriver created successfully")
-    except Exception as e:
-        print(f"✗ AsyncModbusTcpDriver creation failed: {e}")
-
-    # Test UART driver creation
-    try:
-        uart_driver = AsyncUartDriver(port="COM1", baudrate=9600)
-        print("✓ AsyncUartDriver created successfully")
-    except Exception as e:
-        print(f"✗ AsyncUartDriver creation failed: {e}")
+    # 验证驱动是否正确初始化
+    assert mqtt_driver.host == "localhost"
+    assert modbus_driver.port == 502
+    assert uart_driver.baudrate == 9600
 
     print("Async drivers basic test completed!")
 

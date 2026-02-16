@@ -10,6 +10,10 @@ import os
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
+# 检查所有必要导入的函数
+# 该函数尝试导入异步驱动、同步驱动和执行引擎模块
+# 如果导入失败，将返回False
+# 否则返回True
 def check_imports():
     """检查所有必要的导入是否成功。"""
     print(" 检查导入...")
@@ -42,6 +46,10 @@ def check_imports():
 
     return True
 
+# 检查配置文件的函数
+# 该函数读取配置文件并检查是否包含async_mode字段
+# 如果字段缺失或读取失败，将返回False
+# 否则返回True
 def check_config():
     """检查配置文件。"""
     print("\n 检查配置...")
@@ -62,6 +70,10 @@ def check_config():
         print(f" 配置文件检查失败: {e}")
         return False
 
+# 测试驱动创建的异步函数
+# 该函数尝试创建异步驱动和同步驱动实例
+# 如果创建失败，将返回False
+# 否则返回True
 async def test_driver_creation():
     """测试驱动创建。"""
     print("\n 测试驱动创建...")
@@ -89,6 +101,10 @@ async def test_driver_creation():
 
     return True
 
+# 检查主程序更新的函数
+# 该函数读取主程序文件并检查是否支持async_mode配置
+# 如果缺少关键代码或读取失败，将返回False
+# 否则返回True
 def check_main_updates():
     """检查主程序更新。"""
     print("\n 检查主程序更新...")
@@ -114,6 +130,10 @@ def check_main_updates():
         print(f" 主程序检查失败: {e}")
         return False
 
+# 检查执行引擎更新的函数
+# 该函数读取执行引擎文件并检查是否支持async_mode参数
+# 如果缺少关键代码或读取失败，将返回False
+# 否则返回True
 def check_runner_updates():
     """检查执行引擎更新。"""
     print("\n 检查执行引擎更新...")
