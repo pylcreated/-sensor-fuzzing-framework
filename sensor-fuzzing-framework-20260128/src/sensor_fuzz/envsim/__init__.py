@@ -1,1 +1,0 @@
-"""Environment simulation components."""
