@@ -1,5 +1,5 @@
 # Sensor Fuzzing Framework - Quick Setup Script (Windows)
-# Usage: .\setup_and_run.ps1 [-ZipFile "path\to\sensor-fuzzing-framework.zip"]
+# Usage: .\setup_and_run.ps1 -ZipFile "path\to\sensor-fuzzing-framework.zip"
 
 param(
     [Parameter(Mandatory=$true)]
@@ -11,7 +11,6 @@ param(
 Write-Host "Sensor Fuzzing Framework - Quick Setup" -ForegroundColor Green
 Write-Host "=====================================" -ForegroundColor Green
 
-# Check if zip file exists
 if (-not (Test-Path $ZipFile)) {
     Write-Host "File not found: $ZipFile" -ForegroundColor Red
     exit 1
@@ -36,12 +35,11 @@ if (-not $SkipValidation) {
         python -c "import sensor_fuzz; print('Import ok')"
         Write-Host "Validation succeeded." -ForegroundColor Green
     } catch {
-        Write-Host "Validation failed: $_" -ForegroundColor Red
+        Write-Host "Validation failed: $($_.Exception.Message)" -ForegroundColor Red
         exit 1
     }
 }
 
 Write-Host "Starting framework..." -ForegroundColor Green
 Write-Host "Tip: press Ctrl+C to stop" -ForegroundColor Cyan
-python -m sensor_fuzz</content>
-<parameter name="filePath">C:\Users\31601\Desktop\学年论文2\setup_and_run.ps1
+python -m sensor_fuzz

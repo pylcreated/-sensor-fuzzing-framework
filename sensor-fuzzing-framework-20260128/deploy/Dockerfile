@@ -1,5 +1,6 @@
 # Multi-stage build for optimized image
-FROM python:3.11-slim AS base
+ARG BASE_IMAGE=python:3.11-slim
+FROM ${BASE_IMAGE} AS base
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -7,20 +8,18 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    libffi-dev \
-    libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Keep base image lean to avoid OOM during package manager operations
 
 WORKDIR /app
 
+ARG PIP_INDEX_URL=https://pypi.org/simple
+ARG PIP_TRUSTED_HOST=pypi.org
+
 # Install Python dependencies
-COPY requirements.txt requirements-optional-*.txt ./
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir -r requirements-optional-ai.txt || true
+COPY consolidated_requirements.txt ./
+RUN pip install --no-cache-dir --retries 8 --timeout 120 \
+    -i ${PIP_INDEX_URL} --trusted-host ${PIP_TRUSTED_HOST} \
+    -r consolidated_requirements.txt
 
 # Production stage
 FROM base AS production
@@ -33,8 +32,9 @@ COPY --chown=sensorfuzz:sensorfuzz src/ ./src/
 COPY --chown=sensorfuzz:sensorfuzz config/ ./config/
 
 # Set proper permissions
-RUN chmod -R 755 /app && \
-    chown -R sensorfuzz:sensorfuzz /app
+RUN mkdir -p /tmp/prometheus && \
+    chmod -R 755 /app /tmp/prometheus && \
+    chown -R sensorfuzz:sensorfuzz /app /tmp/prometheus
 
 # Switch to non-root user
 USER sensorfuzz
@@ -51,10 +51,6 @@ CMD ["python", "-m", "sensor_fuzz"]
 
 # Development stage
 FROM base AS development
-
-# Install development dependencies
-COPY requirements-dev.txt ./
-RUN pip install --no-cache-dir -r requirements-dev.txt
 
 # Copy application code
 COPY src/ ./src/
