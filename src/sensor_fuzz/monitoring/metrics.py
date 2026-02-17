@@ -2,8 +2,20 @@
 
 from __future__ import annotations
 
-from prometheus_client import Counter, Gauge, Histogram
+import os
+from pathlib import Path
 import time
+
+from prometheus_client import Counter, Gauge, Histogram
+
+
+def _ensure_multiproc_dir() -> None:
+    multiproc_dir = os.getenv("PROMETHEUS_MULTIPROC_DIR")
+    if multiproc_dir:
+        Path(multiproc_dir).mkdir(parents=True, exist_ok=True)
+
+
+_ensure_multiproc_dir()
 
 # Core execution metrics
 TEST_CASES_TOTAL = Counter(

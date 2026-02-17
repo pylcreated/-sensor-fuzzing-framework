@@ -291,6 +291,32 @@ class OpcUaDriver:
     """类说明：封装 OpcUaDriver 的相关行为。"""
     endpoint: str
 
+    def get_node(self, node_id: str):
+        """同步获取 OPC UA 节点对象；库缺失时返回最小兼容桩。"""
+        if OpcUaClient is None:
+            class _FallbackNode:
+                """类说明：封装  FallbackNode 的相关行为。"""
+                def __init__(self):
+                    """方法说明：执行   init   相关逻辑。"""
+                    self.value = None
+
+                def get_value(self):
+                    """方法说明：执行 get value 相关逻辑。"""
+                    return self.value
+
+                def set_value(self, value):
+                    """方法说明：执行 set value 相关逻辑。"""
+                    self.value = value
+
+            return _FallbackNode()
+
+        client = OpcUaClient(self.endpoint)
+        client.connect()
+        try:
+            return client.get_node(node_id)
+        finally:
+            client.disconnect()
+
     async def send(self, payload: Dict[str, Any]) -> Any:
         """异步方法说明：执行 send 相关流程。"""
         node = payload.get("node")
