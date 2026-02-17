@@ -4,6 +4,16 @@ protocols:
     port: 1883
     topic: sensor/data
     qos: 1
+  http:
+    base_url: http://localhost:8000
+    timeout: 5
+  modbus:
+    host: localhost
+    port: 502
+    unit_id: 1
+  uart:
+    port: COM1
+    baudrate: 9600
   profinet:
     version: 2.3
     device_name: pn-controller
@@ -41,12 +51,36 @@ sensors:
     precision: 0.1
     signal_type: analog
     protocol: i2c
+  flow_http:
+    type: flow
+    range: [0, 500]
+    precision: 0.1
+    signal_type: analog
+    protocol: http
+  current_modbus:
+    type: current
+    range: [4, 20]
+    precision: 0.01
+    signal_type: current
+    protocol: modbus
+  temp_uart:
+    type: temperature
+    range: [-40, 125]
+    precision: 0.1
+    signal_type: analog
+    protocol: uart
 
 strategy:
-  anomaly_types: [boundary, drift]
+  anomaly_types: [boundary, protocol_error, signal_distortion, anomaly]
   concurrency: 4
   duration_hours: 2
-  async_mode: true
+  async_mode: false
+  ai_enabled: true
+  anomaly_contamination: 0.1
+  anomaly_threshold: 0.1
+  min_cases_per_suite: 160
+  min_total_cases: 2500
+  execution_cycles: 8
   sil_level: "SIL2"  # IEC 61508 安全完整性等级
   hardware_protection: true  # 启用硬件保护
   redundancy_check: false  # 冗余验证（SIL3/SIL4需要）

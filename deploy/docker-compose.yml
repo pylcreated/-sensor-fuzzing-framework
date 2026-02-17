@@ -9,12 +9,21 @@ services:
       - "8080:8080"  # Metrics endpoint
     volumes:
       - ../config:/app/config:ro
+      - ../reports:/app/reports
       - sensor-fuzz-data:/app/data
       - sensor-fuzz-logs:/app/logs
     environment:
       - PYTHONPATH=/app/src
       - SENSOR_FUZZ_CONFIG_PATH=/app/config
       - PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus
+      - SENSOR_FUZZ_KEEP_RUNNING=1
+      - SENSOR_FUZZ_DASHBOARD_HOST=0.0.0.0
+      - SENSOR_FUZZ_MQTT_HOST=mqtt-broker
+      - SENSOR_FUZZ_UART_SIMULATE=1
+      - SENSOR_FUZZ_MODBUS_SIMULATE=1
+      - SENSOR_FUZZ_LONGRUN_ENABLED=${SENSOR_FUZZ_LONGRUN_ENABLED:-0}
+      - SENSOR_FUZZ_LONGRUN_HOURS=${SENSOR_FUZZ_LONGRUN_HOURS:-48}
+      - SENSOR_FUZZ_LONGRUN_INTERVAL_MINUTES=${SENSOR_FUZZ_LONGRUN_INTERVAL_MINUTES:-60}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import sys; sys.path.insert(0, 'src'); from sensor_fuzz.monitoring.collector import get_system_stats; print('OK')"]
@@ -22,6 +31,16 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    depends_on:
+      - mqtt-broker
+    networks:
+      - sensor-fuzz-network
+
+  mqtt-broker:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    restart: unless-stopped
     networks:
       - sensor-fuzz-network
 

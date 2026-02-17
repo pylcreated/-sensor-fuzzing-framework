@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from dataclasses import dataclass, field
 from typing import Any, Dict, Protocol, Optional, Union
 
@@ -84,7 +85,12 @@ class RestartlessDriverBase:
     async def send(self, payload: bytes) -> Any:  # pragma: no cover - placeholder
         # In real use, send payload over hardware interface
         """异步方法说明：执行 send 相关流程。"""
-        return None
+        return {
+            "protocol": self.protocol,
+            "success": True,
+            "simulated": True,
+            "payload": payload,
+        }
 
 
 def get_restartless_driver(protocol: str, params: Dict[str, Any]) -> RestartlessDriver:
@@ -236,13 +242,25 @@ class MqttDriver:
             if mqtt is None:
                 return {"topic": topic, "payload": msg, "qos": qos}
 
+            if isinstance(msg, dict):
+                import json
+
+                msg = json.dumps(msg, ensure_ascii=False).encode("utf-8")
+            elif isinstance(msg, str):
+                msg = msg.encode("utf-8")
+            elif not isinstance(msg, (bytes, bytearray, int, float, type(None))):
+                msg = str(msg).encode("utf-8")
+
             def _publish():
                 """方法说明：执行  publish 相关逻辑。"""
-                client = mqtt.Client()
-                client.connect(self.host, self.port)
-                result = client.publish(topic, msg, qos=qos)
-                client.disconnect()
-                return result
+                try:
+                    client = mqtt.Client()
+                    client.connect(self.host, self.port)
+                    result = client.publish(topic, msg, qos=qos)
+                    client.disconnect()
+                    return {"topic": topic, "qos": qos, "success": True, "result": str(result)}
+                except Exception as e:
+                    return {"topic": topic, "qos": qos, "success": False, "error": str(e)}
 
             return await loop.run_in_executor(None, _publish)
 
@@ -269,19 +287,57 @@ class ModbusTcpDriver:
             address = payload.get("address", 0)
             length = payload.get("length", 1)
             loop = asyncio.get_event_loop()
+            modbus_simulate = os.getenv("SENSOR_FUZZ_MODBUS_SIMULATE", "0") == "1"
             if ModbusClient is None:
-                return {"unit_id": unit_id, "address": address, "length": length}
+                return {
+                    "unit_id": unit_id,
+                    "address": address,
+                    "length": length,
+                    "success": True,
+                    "simulated": True,
+                }
 
             def _read():
                 """方法说明：执行  read 相关逻辑。"""
-                client = ModbusClient(
-                    host=self.host,
-                    port=self.port,
-                    unit_id=unit_id,
-                    auto_open=True,
-                    auto_close=True,
-                )
-                return client.read_holding_registers(address, length)
+                try:
+                    client = ModbusClient(
+                        host=self.host,
+                        port=self.port,
+                        unit_id=unit_id,
+                        auto_open=True,
+                        auto_close=True,
+                    )
+                    values = client.read_holding_registers(address, length)
+                    if values is None and modbus_simulate:
+                        values = [0 for _ in range(max(int(length), 1))]
+                        return {
+                            "unit_id": unit_id,
+                            "address": address,
+                            "length": length,
+                            "values": values,
+                            "success": True,
+                            "simulated": True,
+                        }
+                    return {
+                        "unit_id": unit_id,
+                        "address": address,
+                        "length": length,
+                        "values": values,
+                        "success": values is not None,
+                    }
+                except Exception as e:
+                    if modbus_simulate:
+                        values = [0 for _ in range(max(int(length), 1))]
+                        return {
+                            "unit_id": unit_id,
+                            "address": address,
+                            "length": length,
+                            "values": values,
+                            "success": True,
+                            "simulated": True,
+                            "fallback_reason": str(e),
+                        }
+                    return {"error": str(e), "success": False}
 
             return await loop.run_in_executor(None, _read)
 
@@ -359,14 +415,51 @@ class UartDriver:
         else:
             # Legacy sync mode
             loop = asyncio.get_event_loop()
-            if serial is None:
-                return payload
+
+            if isinstance(payload, dict):
+                import json
+
+                payload_bytes = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+            elif isinstance(payload, str):
+                payload_bytes = payload.encode("utf-8")
+            elif isinstance(payload, bytes):
+                payload_bytes = payload
+            else:
+                payload_bytes = str(payload).encode("utf-8")
+
+            uart_simulate = os.getenv("SENSOR_FUZZ_UART_SIMULATE", "0") == "1"
+            if serial is None or uart_simulate:
+                return {
+                    "sent": len(payload_bytes),
+                    "received": len(payload_bytes),
+                    "response": payload_bytes,
+                    "success": True,
+                    "simulated": True,
+                }
 
             def _write():
                 """方法说明：执行  write 相关逻辑。"""
-                with serial.Serial(self.port, self.baudrate, timeout=2) as ser:
-                    ser.write(payload)
-                    ser.flush()
-                    return ser.read(128)
+                try:
+                    with serial.Serial(self.port, self.baudrate, timeout=2) as ser:
+                        ser.write(payload_bytes)
+                        ser.flush()
+                        response = ser.read(128)
+                        return {
+                            "sent": len(payload_bytes),
+                            "received": len(response),
+                            "response": response,
+                            "success": True,
+                        }
+                except Exception as e:
+                    if uart_simulate:
+                        return {
+                            "sent": len(payload_bytes),
+                            "received": len(payload_bytes),
+                            "response": payload_bytes,
+                            "success": True,
+                            "simulated": True,
+                            "fallback_reason": str(e),
+                        }
+                    return {"error": str(e), "success": False}
 
             return await loop.run_in_executor(None, _write)

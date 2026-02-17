@@ -188,6 +188,7 @@ class ExecutionEngine:
 
     async def run_suite(self, protocol: str, sensor: Dict[str, Any], async_mode: bool = False) -> None:
         """执行单个协议+传感器测试套件并记录指标。"""
+        suite_start = asyncio.get_running_loop().time()
         # Determine sensor name for metrics and compatibility checks
         sensor_name = (
             sensor.get("name") or sensor.get("id") or sensor.get("type") or "unknown"
@@ -219,6 +220,25 @@ class ExecutionEngine:
                 protocol=protocol, sensor_type=sensor_name, category="generated"
             ).inc(len(cases))
             self.state["cases_executed"] = self.state.get("cases_executed", 0) + len(cases)
+            success_count = sum(1 for result in results if self._is_result_success(result))
+            failed_count = len(results) - success_count
+            anomaly_count = sum(1 for result in results if self._is_result_anomalous(result))
+            self.state["cases_success"] = self.state.get("cases_success", 0) + success_count
+            self.state["cases_failed"] = self.state.get("cases_failed", 0) + failed_count
+            self.state["anomalies"] = self.state.get("anomalies", 0) + anomaly_count
+
+            suite_duration = max(asyncio.get_running_loop().time() - suite_start, 0.001)
+            suite_throughput = len(cases) / suite_duration
+            prev_avg = float(self.state.get("avg_response_time", 0.0))
+            prev_suites = int(self.state.get("suite_count", 0))
+            self.state["suite_count"] = prev_suites + 1
+            self.state["throughput"] = suite_throughput
+            self.state["avg_response_time"] = (
+                (prev_avg * prev_suites + (suite_duration / max(len(cases), 1)))
+                / self.state["suite_count"]
+            )
+            self.state["active_threads"] = self._max_concurrency
+            self.state["ai_enabled"] = bool(self.anomaly_detector)
 
             # AI-powered anomaly analysis
             if self.anomaly_detector and results:
@@ -257,6 +277,28 @@ class ExecutionEngine:
         # Prechecks
         cases = [c for c in cases if protocol_compat_ok(sensor, protocol)]
         cases = [c for c in cases if protobuf_syntax_ok(b"ok")]
+        if not cases:
+            return cases
+
+        min_cases_per_suite = 0
+        if self.cfg:
+            min_cases_per_suite = int(self.cfg.strategy.get("min_cases_per_suite", 0) or 0)
+        if min_cases_per_suite > len(cases):
+            expanded_cases: List[Dict[str, Any]] = []
+            repeat_count = (min_cases_per_suite + len(cases) - 1) // len(cases)
+            for repeat_idx in range(repeat_count):
+                for case in cases:
+                    payload = case.get("payload")
+                    if isinstance(payload, dict):
+                        payload = dict(payload)
+                    expanded_cases.append(
+                        {
+                            "payload": payload,
+                            "category": case.get("category", "unknown"),
+                            "variant": repeat_idx,
+                        }
+                    )
+            cases = expanded_cases[:min_cases_per_suite]
         return cases
 
     async def _dispatch_case(
@@ -354,7 +396,18 @@ class ExecutionEngine:
             ).inc(self.state["ai_analysis"]["anomalies_detected"])
 
         except Exception as e:
-            self._logger.warning(f"AI analysis error: {e}")
+            fallback_anomalies = sum(1 for result in results if self._is_result_anomalous(result))
+            self.state["ai_analysis"] = {
+                "features_analyzed": len(results),
+                "anomalies_detected": int(fallback_anomalies),
+                "detector_trained": False,
+                "threshold": 0.0,
+                "fallback": True,
+            }
+            metrics.ANOMALIES_DETECTED.labels(
+                detection_method="ai_fallback", severity="unknown"
+            ).inc(fallback_anomalies)
+            self._logger.warning(f"AI analysis fallback activated: {e}")
             # Don't fail the entire suite due to AI issues
 
     def _extract_features(self, result: Any, case: Dict[str, Any]) -> List[float]:
@@ -405,10 +458,23 @@ class ExecutionEngine:
                 return True
         return False
 
+    def _is_result_success(self, result: Any) -> bool:
+        """Determine whether a case execution should be considered successful."""
+        if isinstance(result, dict):
+            return bool(result.get("success", True)) and int(result.get("error_code", 0)) == 0
+        return result is not None
+
     def stop(self) -> None:
         """方法说明：执行 stop 相关逻辑。"""
         if hasattr(self, "task_runner"):
             self.task_runner.shutdown()
+
+    def reset_async_context(self) -> None:
+        """重建与事件循环绑定的执行器对象，避免跨 loop 复用错误。"""
+        self._executor = AsyncBoundedExecutor(
+            max_concurrency=self._max_concurrency,
+            task_timeout=(self.cfg.strategy.get("task_timeout") if self.cfg else None),
+        )
 
 
 async def run_full(

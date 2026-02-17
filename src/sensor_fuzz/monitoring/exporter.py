@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import threading
 import time
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import HTTPServer, BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Dict, Any, Optional
 from urllib.parse import urlparse
 
@@ -72,12 +72,13 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
     def _send_response(self, code: int, content_type: str, content: str):
         """Send HTTP response."""
+        content_bytes = content.encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", content_type)
-        self.send_header("Content-Length", str(len(content)))
+        self.send_header("Content-Length", str(len(content_bytes)))
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
-        self.wfile.write(content.encode("utf-8"))
+        self.wfile.write(content_bytes)
 
     def _collect_metrics_data(self) -> Dict[str, Any]:
         """Collect current metrics data."""
@@ -219,8 +220,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 {{
                     title: '测试用例总数',
                     value: data.test_cases.total,
-                    subtitle: `成功: ${{data.test_cases.success}} | `
-                    `失败: ${{data.test_cases.failed}}`
+                    subtitle: `成功: ${{data.test_cases.success}} | 失败: ${{data.test_cases.failed}}`
                 }},
                 {{
                     title: '检测到的异常',
@@ -336,7 +336,7 @@ class EnhancedMetricsExporter:
                 )
 
             try:
-                self._dashboard_server = HTTPServer(
+                self._dashboard_server = ThreadingHTTPServer(
                     (self.dashboard_host, self.dashboard_port), handler_class
                 )
                 print(
@@ -374,8 +374,16 @@ class EnhancedMetricsExporter:
 
 
 # Backward compatibility
-def start_exporter(port: int = 9000) -> EnhancedMetricsExporter:
+def start_exporter(
+    port: int = 9000,
+    dashboard_port: int = 8080,
+    dashboard_host: str = "localhost"
+) -> EnhancedMetricsExporter:
     """Start enhanced metrics exporter with dashboard."""
-    exporter = EnhancedMetricsExporter(port=port)
+    exporter = EnhancedMetricsExporter(
+        port=port,
+        dashboard_port=dashboard_port,
+        dashboard_host=dashboard_host
+    )
     exporter.start()
     return exporter

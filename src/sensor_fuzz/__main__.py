@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
+import os
 import signal
 import sys
+import time
+from datetime import datetime
 from pathlib import Path
-from typing import NoReturn
+from typing import Any, Dict, List, NoReturn, Tuple
 
 from sensor_fuzz.engine.runner import ExecutionEngine, run_full
 from sensor_fuzz.config import ConfigLoader, ConfigReloader, ConfigVersionStore
@@ -53,10 +57,91 @@ def validate_config_file(config_path: str) -> Path:
     return path
 
 
+def _build_execution_pairs(cfg) -> List[Tuple[str, Dict[str, Any], str]]:
+    """构建待执行的(协议, 传感器配置, 传感器名)列表。"""
+    pairs: List[Tuple[str, Dict[str, Any], str]] = []
+    for sensor_name, sensor_cfg in cfg.sensors.items():
+        protocol = sensor_cfg.get("protocol")
+        if isinstance(protocol, str) and protocol in cfg.protocols:
+            pairs.append((protocol, dict(sensor_cfg), sensor_name))
+
+    if not pairs and cfg.protocols:
+        default_sensor = next(iter(cfg.sensors.values()), {"type": "temperature", "range": [-40, 125]})
+        for protocol_name in cfg.protocols.keys():
+            fallback_sensor = dict(default_sensor)
+            fallback_sensor["protocol"] = protocol_name
+            pairs.append((protocol_name, fallback_sensor, f"fallback-{protocol_name}"))
+    protocol_priority = {
+        "i2c": 0,
+        "spi": 1,
+        "profinet": 2,
+        "uart": 3,
+        "modbus": 4,
+        "http": 5,
+        "mqtt": 6,
+        "opcua": 7,
+    }
+    pairs.sort(key=lambda item: protocol_priority.get(item[0].lower(), 99))
+    return pairs
+
+
+def _update_dashboard(metrics_exporter, engine, cfg, started_at: float) -> None:
+    """将当前执行状态写入 Dashboard 数据源。"""
+    if not metrics_exporter:
+        return
+
+    updates = {
+        "test_cases_total": int(engine.state.get("cases_executed", 0)),
+        "test_cases_success": int(engine.state.get("cases_success", 0)),
+        "test_cases_failed": int(engine.state.get("cases_failed", 0)),
+        "anomalies_detected": int(engine.state.get("anomalies", 0)),
+        "ai_anomalies": int(engine.state.get("ai_analysis", {}).get("anomalies_detected", 0)),
+        "throughput": float(engine.state.get("throughput", 0.0)),
+        "avg_response_time": float(engine.state.get("avg_response_time", 0.0)),
+        "cpu_usage": float(engine.state.get("cpu_usage", 0.0)),
+        "memory_usage": float(engine.state.get("memory_usage", 0.0)),
+        "ai_enabled": bool(cfg.strategy.get("ai_enabled", False)),
+        "ai_confidence": float(engine.state.get("ai_analysis", {}).get("threshold", 0.0)),
+        "ai_analysis_time": float(engine.state.get("ai_analysis", {}).get("features_analyzed", 0.0)),
+        "uptime": max(0.0, time.time() - started_at),
+        "active_threads": int(engine.state.get("active_threads", cfg.strategy.get("concurrency", 1))),
+        "active_sessions": int(engine.state.get("suite_count", 0)),
+    }
+    for key, value in updates.items():
+        metrics_exporter.update_dashboard_data(key, value)
+
+
+def _append_longrun_summary(engine, cfg, started_at: float, reason: str) -> None:
+    """按日写入长跑汇总，便于48小时验收追踪。"""
+    reports_dir = Path("reports") / "longrun"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    now = datetime.now()
+    summary = {
+        "timestamp": now.isoformat(timespec="seconds"),
+        "reason": reason,
+        "uptime_hours": round(max(0.0, time.time() - started_at) / 3600.0, 4),
+        "cases_executed": int(engine.state.get("cases_executed", 0)),
+        "cases_success": int(engine.state.get("cases_success", 0)),
+        "cases_failed": int(engine.state.get("cases_failed", 0)),
+        "anomalies": int(engine.state.get("anomalies", 0)),
+        "throughput": float(engine.state.get("throughput", 0.0)),
+        "avg_response_time": float(engine.state.get("avg_response_time", 0.0)),
+        "ai_enabled": bool(cfg.strategy.get("ai_enabled", False)),
+    }
+
+    latest_file = reports_dir / "summary_latest.json"
+    latest_file.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    daily_file = reports_dir / f"summary_{now.strftime('%Y%m%d')}.jsonl"
+    with daily_file.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(summary, ensure_ascii=False) + "\n")
+
+
 def main() -> NoReturn:
     """主执行流程：初始化 -> 加载配置 -> 运行测试 -> 合规校验 -> 资源回收。"""
     exit_code = 0
     reloader = None
+    app_started_at = time.time()
 
     try:
         # Setup logging first for error reporting
@@ -73,7 +158,11 @@ def main() -> NoReturn:
 
         # Start metrics server
         try:
-            metrics_exporter = start_exporter(port=8000)
+            metrics_exporter = start_exporter(
+                port=8000,
+                dashboard_port=8080,
+                dashboard_host=os.getenv("SENSOR_FUZZ_DASHBOARD_HOST", "localhost")
+            )
             logger.info("Metrics exporter started on port 8000")
         except Exception as e:
             logger.warning(f"Failed to start metrics exporter: {e}")
@@ -90,6 +179,9 @@ def main() -> NoReturn:
         try:
             loader = ConfigLoader()
             cfg = loader.load(config_file)
+            mqtt_host_override = os.getenv("SENSOR_FUZZ_MQTT_HOST")
+            if mqtt_host_override and isinstance(cfg.protocols.get("mqtt"), dict):
+                cfg.protocols["mqtt"]["host"] = mqtt_host_override
             logger.info("Configuration loaded successfully")
 
             try:
@@ -124,6 +216,7 @@ def main() -> NoReturn:
         # Create execution engine
         try:
             engine = ExecutionEngine(cfg)
+            engine.resume_from_checkpoint()
             logger.info("Execution engine initialized")
         except Exception as e:
             logger.error(f"Failed to initialize execution engine: {e}")
@@ -148,14 +241,84 @@ def main() -> NoReturn:
 
         # Run the main fuzzing loop
         try:
-            sensor_name = (
-                next(iter(cfg.sensors.keys())) if cfg.sensors else "temperature"
-            )
-            sensor_config = cfg.sensors.get(sensor_name, {})
             async_mode = cfg.strategy.get("async_mode", False)
-            logger.info(f"Starting fuzzing with sensor '{sensor_name}' (async_mode={async_mode})")
+            execution_pairs = _build_execution_pairs(cfg)
+            if not execution_pairs:
+                raise ApplicationError("No runnable protocol/sensor pairs found in configuration", 4)
 
-            asyncio.run(run_full(engine, "i2c", sensor_config, async_mode))
+            target_total_cases = int(cfg.strategy.get("min_total_cases", 0) or 0)
+            if sil_manager:
+                try:
+                    sil_summary = sil_manager.get_sil_requirements_summary(sil_level)
+                    target_total_cases = max(target_total_cases, int(sil_summary.get("min_test_cases", 0)))
+                except Exception as e:
+                    logger.warning(f"Failed to read SIL requirements summary: {e}")
+
+            max_cycles = max(1, int(cfg.strategy.get("execution_cycles", 1) or 1))
+            if target_total_cases > 0:
+                min_cases_per_suite = max(1, int(cfg.strategy.get("min_cases_per_suite", 1) or 1))
+                per_cycle_capacity = max(1, len(execution_pairs) * min_cases_per_suite)
+                estimated_cycles = (target_total_cases + per_cycle_capacity - 1) // per_cycle_capacity
+                max_cycles = max(max_cycles, estimated_cycles)
+
+            logger.info(
+                "Starting fuzzing with %s pairs, async_mode=%s, target_total_cases=%s, max_cycles=%s",
+                len(execution_pairs),
+                async_mode,
+                target_total_cases,
+                max_cycles,
+            )
+
+            async def _run_execution_plan() -> None:
+                nonlocal async_mode
+                for cycle_idx in range(max_cycles):
+                    for protocol, sensor_config, sensor_name in execution_pairs:
+                        sensor_payload = dict(sensor_config)
+                        sensor_payload["protocol"] = protocol
+                        logger.info(
+                            "Running suite cycle=%s protocol=%s sensor=%s",
+                            cycle_idx + 1,
+                            protocol,
+                            sensor_name,
+                        )
+                        try:
+                            await run_full(engine, protocol, sensor_payload, async_mode)
+                        except Exception as e:
+                            if async_mode and "required for async" in str(e):
+                                logger.warning("Async dependency missing, fallback to sync mode: %s", e)
+                                async_mode = False
+                                try:
+                                    await run_full(engine, protocol, sensor_payload, async_mode)
+                                except Exception as sync_err:
+                                    logger.warning(
+                                        "Suite failed and skipped protocol=%s sensor=%s error=%s",
+                                        protocol,
+                                        sensor_name,
+                                        sync_err,
+                                    )
+                            else:
+                                logger.warning(
+                                    "Suite failed and skipped protocol=%s sensor=%s error=%s",
+                                    protocol,
+                                    sensor_name,
+                                    e,
+                                )
+
+                        if "metrics_exporter" in locals():
+                            _update_dashboard(metrics_exporter, engine, cfg, app_started_at)
+
+                    if target_total_cases > 0 and int(engine.state.get("cases_executed", 0)) >= target_total_cases:
+                        logger.info(
+                            "Reached target total cases: %s >= %s",
+                            engine.state.get("cases_executed", 0),
+                            target_total_cases,
+                        )
+                        break
+
+            asyncio.run(_run_execution_plan())
+            if "metrics_exporter" in locals():
+                _update_dashboard(metrics_exporter, engine, cfg, app_started_at)
+            _append_longrun_summary(engine, cfg, app_started_at, reason="initial-run")
             logger.info("Fuzzing completed successfully")
 
             # Perform SIL compliance validation
@@ -178,7 +341,7 @@ def main() -> NoReturn:
                     # Get system configuration
                     system_config = {
                         "supported_protocols": list(cfg.protocols.keys()) if cfg.protocols else ["uart", "mqtt", "http"],
-                        "supported_anomaly_types": cfg.strategy.get("anomaly_types", ["boundary", "anomaly"]),
+                        "supported_anomaly_types": cfg.strategy.get("anomaly_types", ["boundary", "protocol_error", "signal_distortion", "anomaly"]),
                         "hardware_protection_enabled": cfg.strategy.get("hardware_protection", False),
                         "redundancy_enabled": cfg.strategy.get("redundancy_check", False),
                         "async_mode_enabled": async_mode,
@@ -220,6 +383,64 @@ def main() -> NoReturn:
                         return compliance_report
 
                     asyncio.run(run_sil_validation())
+
+                    keep_running = os.getenv("SENSOR_FUZZ_KEEP_RUNNING", "0") == "1"
+                    if keep_running:
+                        longrun_enabled = os.getenv("SENSOR_FUZZ_LONGRUN_ENABLED", "0") == "1"
+                        longrun_hours = float(os.getenv("SENSOR_FUZZ_LONGRUN_HOURS", "0") or 0)
+                        longrun_interval_minutes = max(
+                            1,
+                            int(os.getenv("SENSOR_FUZZ_LONGRUN_INTERVAL_MINUTES", "60") or 60),
+                        )
+
+                        if longrun_enabled and longrun_hours > 0:
+                            engine.reset_async_context()
+                            logger.info(
+                                "Long-run mode enabled: hours=%s interval_minutes=%s",
+                                longrun_hours,
+                                longrun_interval_minutes,
+                            )
+                            deadline = time.time() + longrun_hours * 3600
+
+                            async def _run_longrun_mode() -> None:
+                                iteration = 0
+                                while time.time() < deadline:
+                                    iteration += 1
+                                    logger.info("Long-run iteration %s started", iteration)
+                                    await _run_execution_plan()
+                                    if "metrics_exporter" in locals():
+                                        _update_dashboard(metrics_exporter, engine, cfg, app_started_at)
+                                    _append_longrun_summary(
+                                        engine,
+                                        cfg,
+                                        app_started_at,
+                                        reason=f"longrun-iteration-{iteration}",
+                                    )
+
+                                    remaining_seconds = deadline - time.time()
+                                    if remaining_seconds <= 0:
+                                        break
+                                    sleep_seconds = min(
+                                        longrun_interval_minutes * 60,
+                                        max(1, int(remaining_seconds)),
+                                    )
+                                    logger.info(
+                                        "Long-run iteration %s complete, next run in %s seconds",
+                                        iteration,
+                                        sleep_seconds,
+                                    )
+                                    await asyncio.sleep(sleep_seconds)
+
+                            asyncio.run(_run_longrun_mode())
+
+                            _append_longrun_summary(engine, cfg, app_started_at, reason="longrun-complete")
+                            logger.info("Long-run mode completed, service stays alive for inspection")
+                            while True:
+                                time.sleep(1)
+                        else:
+                            logger.info("Keep-running mode enabled, service will stay alive until stopped")
+                            while True:
+                                time.sleep(1)
 
                 except Exception as e:
                     logger.error(f"SIL compliance validation failed: {e}")
