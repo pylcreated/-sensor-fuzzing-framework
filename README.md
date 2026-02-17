@@ -55,8 +55,8 @@ Docker部署
 # 使用Docker Compose一键部署
 docker-compose -f deploy/docker-compose.yml up -d
 
-# 访问Web界面: http://localhost:8000
 # 监控面板: http://localhost:8080
+# 指标端点: http://localhost:8000/metrics
 ```
 
 Python包安装
@@ -119,8 +119,8 @@ python sil_compliance_test.py
 ```
 
 4) 访问Web界面验证：
-- 主界面: http://localhost:8000
 - 监控面板: http://localhost:8080
+- 指标端点: http://localhost:8000/metrics
 
 开发节奏
 

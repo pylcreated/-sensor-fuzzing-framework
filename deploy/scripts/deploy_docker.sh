@@ -179,7 +179,7 @@ health_check() {
     local attempt=1
 
     while [ $attempt -le $max_attempts ]; do
-        if curl -f http://localhost:8000/health &> /dev/null; then
+        if curl -f http://localhost:8080/api/health &> /dev/null; then
             log_success "Health check passed"
             return 0
         fi

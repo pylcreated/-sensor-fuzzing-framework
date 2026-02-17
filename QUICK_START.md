@@ -52,8 +52,8 @@ Python: 3.10 或更高版本
 
 安装完成后，访问以下地址：
 
-- **Web管理界面**: http://localhost:8000
 - **监控仪表板**: http://localhost:8080
+- **Prometheus原始指标**: http://localhost:8000/metrics
 - **Prometheus指标**: http://localhost:9090
 - **Grafana面板**: http://localhost:3000
 
@@ -87,7 +87,7 @@ A: 请以管理员身份运行，或使用虚拟环境
 A: 请使用Python 3.10 或更高版本
 
 **Q: 端口被占用？**
-A: 修改 `config/sensor_protocol_config.yaml` 中的端口配置
+A: Dashboard 使用 `8080`，指标端点使用 `8000`，请先释放端口或调整 docker 端口映射
 
 **Q: 内存不足？**
 A: 增加系统内存，或调整 `config/memory_config.yaml` 中的池大小
@@ -101,10 +101,11 @@ A: 增加系统内存，或调整 `config/memory_config.yaml` 中的池大小
 开始使用
 
 1. **配置传感器**: 编辑 `config/sensor_protocol_config.yaml`
+1. **配置传感器**: 编辑 `config/config.yaml`（兼容 `config/sensor_protocol_config.yaml`）
 2. **选择协议**: 配置所需的工业协议参数
 3. **设置SIL等级**: 选择目标安全完整性等级
 4. **启动测试**: 运行 `python -m sensor_fuzz`
-5. **监控结果**: 通过Web界面查看测试进度和结果
+5. **监控结果**: 通过 `http://localhost:8080` 查看监控面板
 
 祝您使用愉快！</content>
 <parameter name="filePath">C:\Users\31601\Desktop\学年论文2\QUICK_START.md

@@ -61,10 +61,10 @@ deploy/
 
 After successful deployment, the following services will be available:
 
-- **Sensor Fuzzing Framework Web UI**: http://localhost:8000
+- **Sensor Fuzzing Framework Dashboard**: http://localhost:8080
 - **Prometheus Metrics**: http://localhost:9090
 - **Grafana Dashboards**: http://localhost:3000 (admin/admin)
-- **Metrics Endpoint**: http://localhost:8080/metrics
+- **Application Metrics Endpoint**: http://localhost:8000/metrics
 
 ## Development Deployment
 
@@ -82,7 +82,7 @@ The development environment mounts the source code and provides:
 - Live code reloading
 - Development dependencies installed
 - Debug logging enabled
-- Alternative ports (8001 for web UI, 8081 for metrics)
+- Alternative ports (8081 for dashboard, 8001 for metrics)
 
 ## Configuration
 

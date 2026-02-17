@@ -127,7 +127,9 @@ function Start-OneClickDockerFuzz {
 			Invoke-CheckedCommand -Command "docker" -Arguments ($composeArgsBase + @("exec", "-T", "sensor-fuzz", "python", "-c", "import sensor_fuzz; print('smoke test ok')")) -StepName "Running tests..."
 		}
 
-		Write-Host "Start succeeded. Service URL: http://localhost:8000" -ForegroundColor Green
+		Write-Host "Start succeeded." -ForegroundColor Green
+		Write-Host "Dashboard URL: http://localhost:8080" -ForegroundColor Green
+		Write-Host "Metrics URL: http://localhost:8000/metrics" -ForegroundColor Green
 		if (-not $KeepRunning) {
 			Invoke-CheckedCommand -Command "docker" -Arguments ($composeArgsBase + @("down")) -StepName "Stopping Docker container..."
 		}

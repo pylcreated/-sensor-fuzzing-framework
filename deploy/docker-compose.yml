@@ -5,8 +5,8 @@ services:
       dockerfile: deploy/Dockerfile
       target: production
     ports:
-      - "8000:8000"  # Web dashboard
-      - "8080:8080"  # Metrics endpoint
+      - "8000:8000"  # Metrics endpoint
+      - "8080:8080"  # Dashboard
     volumes:
       - ../config:/app/config:ro
       - ../reports:/app/reports
@@ -50,8 +50,8 @@ services:
       dockerfile: deploy/Dockerfile
       target: development
     ports:
-      - "8001:8000"
-      - "8081:8080"
+      - "8001:8000"  # Metrics endpoint (dev)
+      - "8081:8080"  # Dashboard (dev)
     volumes:
       - ..:/app
       - /app/__pycache__
