@@ -75,7 +75,6 @@ python -m sensor_fuzz --help
 - [用户手册](docs/USER.md) - 功能使用指南
 - [配置参考](docs/CONFIG.md) - 配置参数详解
 - [部署手册](docs/DEPLOY.md) - 高级部署选项
-- [分发指南](docs/DISTRIBUTION.md) - 获取和分发说明
 
 故障排除
 

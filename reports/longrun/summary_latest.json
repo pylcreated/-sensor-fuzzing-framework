@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-02-17T04:45:19",
-  "reason": "longrun-complete",
-  "uptime_hours": 0.0031,
-  "cases_executed": 4800,
-  "cases_success": 4800,
+  "timestamp": "2026-02-17T04:51:38",
+  "reason": "longrun-iteration-1",
+  "uptime_hours": 0.0011,
+  "cases_executed": 3840,
+  "cases_success": 3840,
   "cases_failed": 0,
   "anomalies": 0,
-  "throughput": 1330.0384954775584,
-  "avg_response_time": 0.0009982462393747936,
+  "throughput": 1485.1677089820541,
+  "avg_response_time": 0.0009925277888027514,
   "ai_enabled": true
 }

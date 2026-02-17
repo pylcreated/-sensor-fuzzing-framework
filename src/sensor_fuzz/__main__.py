@@ -57,6 +57,39 @@ def validate_config_file(config_path: str) -> Path:
     return path
 
 
+def resolve_config_file() -> Path:
+    """解析配置文件路径：优先环境变量，其次默认路径，兼容历史路径。"""
+    env_explicit = os.getenv("SENSOR_FUZZ_CONFIG_FILE") or os.getenv("SF_CONFIG")
+    env_path = os.getenv("SENSOR_FUZZ_CONFIG_PATH")
+
+    candidates: List[str] = []
+    if env_explicit:
+        candidates.append(env_explicit)
+    if env_path:
+        env_base = Path(env_path)
+        if env_base.is_dir() or not env_base.suffix:
+            candidates.append(str(env_base / "config.yaml"))
+        else:
+            candidates.append(str(env_base))
+
+    candidates.extend([
+        "config/config.yaml",
+        "config/sensor_protocol_config.yaml",
+    ])
+
+    tried: List[str] = []
+    for candidate in candidates:
+        try:
+            return validate_config_file(candidate)
+        except ApplicationError:
+            tried.append(candidate)
+
+    raise ApplicationError(
+        "No valid configuration file found. Tried: " + ", ".join(tried),
+        2,
+    )
+
+
 def _build_execution_pairs(cfg) -> List[Tuple[str, Dict[str, Any], str]]:
     """构建待执行的(协议, 传感器配置, 传感器名)列表。"""
     pairs: List[Tuple[str, Dict[str, Any], str]] = []
@@ -171,8 +204,7 @@ def main() -> NoReturn:
         setup_signal_handlers()
 
         # Validate configuration
-        config_path = "config/sensor_protocol_config.yaml"
-        config_file = validate_config_file(config_path)
+        config_file = resolve_config_file()
         logger.info(f"Using configuration file: {config_file}")
 
         # Load configuration

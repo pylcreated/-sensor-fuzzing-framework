@@ -9,6 +9,35 @@
 - 安装依赖：`pip install -r requirements.txt`
 - 配置文件路径：`config/config.yaml`
 
+## 配置加载优先级
+
+程序启动时按以下顺序寻找配置：
+
+1. `SENSOR_FUZZ_CONFIG_FILE`（显式文件路径，最高优先级）
+2. `SF_CONFIG`（显式文件路径，兼容部署场景）
+3. `SENSOR_FUZZ_CONFIG_PATH`
+   - 若为目录，自动拼接 `config.yaml`
+   - 若为文件路径，直接使用
+4. 默认路径：`config/config.yaml`
+5. 兼容回退：`config/sensor_protocol_config.yaml`
+
+若以上路径都不可用，程序会在启动阶段报错退出。
+
+## 环境变量示例
+
+### 本地开发（PowerShell）
+```powershell
+$env:SENSOR_FUZZ_CONFIG_FILE = "config/config.yaml"
+python -m sensor_fuzz
+```
+
+### Kubernetes（已在部署清单中使用）
+```yaml
+env:
+  - name: SF_CONFIG
+    value: /app/config/config.yaml
+```
+
 ## 配置结构
 - protocols: MQTT/HTTP/Modbus/OPCUA/UART 等参数
 - sensors: 量程、精度、signal_type、protocol

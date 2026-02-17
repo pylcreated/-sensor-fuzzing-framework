@@ -37,6 +37,18 @@ pip install -r requirements.txt
 python -m sensor_fuzz
 ```
 
+配置文件优先级
+
+程序启动时按以下顺序读取配置：
+
+1. `SENSOR_FUZZ_CONFIG_FILE`
+2. `SF_CONFIG`
+3. `SENSOR_FUZZ_CONFIG_PATH`（目录时自动拼接 `config.yaml`）
+4. 默认：`config/config.yaml`
+5. 兼容回退：`config/sensor_protocol_config.yaml`
+
+如果以上路径均不可用，程序会在启动阶段报错退出。
+
 Docker部署
 
 ```bash
@@ -73,9 +85,7 @@ pip install sensor_fuzz_framework-0.1.0-py3-none-any.whl
 详细文档
 
 - [用户手册](docs/USER.md) - 功能使用指南
-- [开发手册](docs/DEV.md) - 代码开发规范
 - [部署手册](docs/DEPLOY.md) - 部署配置说明
-- [分发指南](docs/DISTRIBUTION.md) - 文件获取方式
 - [配置参考](docs/CONFIG.md) - 配置参数详解
 
 目录结构（初始骨架）
@@ -154,7 +164,7 @@ python sil_compliance_test.py
 常见问题
 
 **Q: 如何配置传感器协议？**
-A: 编辑 `config/sensor_protocol_config.yaml` 文件，参考 `docs/CONFIG.md`。
+A: 推荐编辑 `config/config.yaml`；若保留历史文件，也兼容 `config/sensor_protocol_config.yaml`。详见 `docs/CONFIG.md`。
 
 **Q: 支持哪些操作系统？**
 A: Windows 10/11、Ubuntu 20.04+、CentOS 7/8、麒麟OS等。
