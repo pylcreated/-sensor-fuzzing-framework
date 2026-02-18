@@ -41,7 +41,7 @@ env:
 ## 配置结构
 - protocols: MQTT/HTTP/Modbus/OPCUA/UART 等参数
 - sensors: 量程、精度、signal_type、protocol
-- strategy: anomaly_types、concurrency、duration_hours
+- strategy: anomaly_types、concurrency、duration_hours、fault_injection_rate
 - sil_mapping: SIL1-SIL4 覆盖率/时长/误报率
 
 ## 示例
@@ -58,6 +58,7 @@ sensors:
 strategy:
   anomaly_types: [boundary, protocol_error]
   concurrency: 10
+  fault_injection_rate: 0.0
 sil_mapping:
   SIL4:
     coverage: 0.99
@@ -67,3 +68,8 @@ sil_mapping:
 ## 常见错误
 - 覆盖率未在 [0.9,1]: 修正 sil_mapping.coverage
 - 缺少必填字段：range/precision/signal_type
+
+## 异常注入（联调看板推荐）
+- 配置方式：`strategy.fault_injection_rate: 0.2`（表示约 20% 用例被标记为异常）
+- 环境变量覆盖：`SENSOR_FUZZ_FAULT_INJECTION_RATE=0.2`
+- 默认值为 `0.0`，即不注入，保持真实结果统计。

@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-02-17T13:25:02",
+  "timestamp": "2026-02-18T15:11:42",
   "reason": "initial-run",
-  "uptime_hours": 0.0005,
-  "cases_executed": 2508,
-  "cases_success": 2508,
-  "cases_failed": 0,
-  "anomalies": 0,
-  "throughput": 1566.7483878131216,
-  "avg_response_time": 0.000670504826561129,
+  "uptime_hours": 0.0004,
+  "cases_executed": 2880,
+  "cases_success": 2298,
+  "cases_failed": 582,
+  "anomalies": 582,
+  "throughput": 109536.5232225932,
+  "avg_response_time": 1.131350694676156e-05,
   "ai_enabled": true
 }

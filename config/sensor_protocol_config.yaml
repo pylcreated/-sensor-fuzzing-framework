@@ -74,6 +74,7 @@ strategy:
   anomaly_types: [boundary, protocol_error, signal_distortion, anomaly]
   concurrency: 4
   duration_hours: 2
+  fault_injection_rate: 0.2
   async_mode: false
   ai_enabled: true
   anomaly_contamination: 0.1

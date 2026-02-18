@@ -1,7 +1,6 @@
 """模块说明：tests/test_envsim.py 的主要实现与辅助逻辑。"""
 
 # 导入环境模拟器接口
-from sensor_fuzz.envsim.interfaces import EnvironmentSimulator
 from sensor_fuzz.envsim.simulator import SimulatedEnvironment
 
 # 定义一个模拟环境的类，用于测试环境模拟器的功能
@@ -83,3 +82,26 @@ def test_simulated_environment_noise_injection_changes_value():
     sim.set_temperature(25.0)
     sample = sim.snapshot(temperature_noise_std=0.8)
     assert sample["temperature_c"] != 25.0
+
+
+def test_simulated_environment_all_abnormal_conditions():
+    """测试仿真器在所有异常条件下的行为。"""
+    sim = SimulatedEnvironment(seed=1234)
+
+    # 设置异常条件
+    sim.set_temperature(-100.0)  # 极端低温
+    sim.set_light_intensity(20000.0)  # 极端高光强
+    sim.set_vibration(500.0, 20.0)  # 极端高频高幅振动
+
+    # 采样并验证
+    sample = sim.snapshot(
+        temperature_noise_std=10.0,  # 注入温度噪声
+        light_noise_std=100.0,      # 注入光强噪声
+        vibration_noise_std=1.0    # 注入振动噪声
+    )
+
+    # 验证异常条件是否正确反映在输出中
+    assert sample["temperature_c"] < -80.0, "温度异常未正确反映"
+    assert sample["light_lux"] > 19500.0, "光强异常未正确反映"
+    assert sample["vibration_freq_hz"] == 500.0, "振动频率异常未正确反映"
+    assert sample["vibration_amplitude"] > 18.0, "振动幅值异常未正确反映"

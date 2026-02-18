@@ -75,6 +75,11 @@ DEFAULT_SCHEMA = {
                     "maximum": 1.0,
                 },
                 "anomaly_threshold": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+                "fault_injection_rate": {
+                    "type": "number",
+                    "minimum": 0.0,
+                    "maximum": 1.0,
+                },
             },
         },
         "sil_mapping": {

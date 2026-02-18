@@ -2,7 +2,7 @@
 
 import asyncio
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch, AsyncMock
 
 # 导入执行引擎和配置相关模块
 from sensor_fuzz.engine.runner import ExecutionEngine
@@ -441,3 +441,43 @@ sil_mapping:
     assert "anomalies_found" in checkpoint_data
     assert "last_case_id" in checkpoint_data
     assert "metadata" in checkpoint_data
+
+
+@pytest.mark.asyncio
+async def test_run_suite_fault_injection_generates_anomalies(tmp_path, monkeypatch):
+    """开启故障注入后，应能观测到异常计数增加。"""
+    cfg_file = tmp_path / "cfg.yml"
+    cfg_file.write_text(
+        """
+protocols:
+  mqtt:
+    host: localhost
+sensors:
+  temperature:
+    range: [0, 100]
+    precision: 0.1
+    signal_type: digital
+strategy:
+  anomaly_types: [boundary, anomaly, protocol_error, signal_distortion]
+  concurrency: 2
+  fault_injection_rate: 1.0
+sil_mapping:
+  SIL1:
+    coverage: 0.95
+        """,
+        encoding="utf-8",
+    )
+    cfg = ConfigLoader().load(cfg_file)
+    engine = ExecutionEngine(cfg, checkpoint_path=tmp_path / "state.json")
+
+    mock_driver = AsyncMock()
+    mock_driver.send.return_value = {"success": True, "error_code": 0, "response_time": 0.01}
+
+    with patch.object(engine, "_make_driver", return_value=mock_driver):
+        await engine.run_suite("mqtt", cfg.sensors["temperature"])
+
+    assert engine.state.get("anomalies", 0) > 0
+    assert any(
+        isinstance(item, dict) and item.get("fault_injected")
+        for item in engine.state.get("last_results", [])
+    )

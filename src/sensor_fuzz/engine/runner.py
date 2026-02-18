@@ -5,7 +5,8 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-from typing import Any, Dict, List, Optional
+import random
+from typing import Any, Dict, List, Optional, Set
 
 try:  # coloredlogs is optional; fallback to basic logging if missing
     import coloredlogs
@@ -71,6 +72,13 @@ class ExecutionEngine:
         if coloredlogs:
             coloredlogs.install(level="INFO", logger=self._logger)  # pragma: no cover
 
+        self._fault_injection_rate = self._resolve_fault_injection_rate(cfg)
+        self._fault_injection_rng = random.Random(2026)
+        configured_types = cfg.strategy.get("anomaly_types", []) if cfg else []
+        self._fault_injection_categories: Set[str] = {
+            str(item).strip().lower() for item in configured_types if str(item).strip()
+        }
+
         # Initialize connection pools for memory optimization
         self._connection_pools: Dict[str, ConnectionObjectPool] = {}
 
@@ -87,6 +95,46 @@ class ExecutionEngine:
                 self._logger.warning(f"Failed to initialize AI anomaly detector: {e}")
                 self.anomaly_detector = None
         self.config_manager = config_manager
+
+    def _resolve_fault_injection_rate(self, cfg: Optional[FrameworkConfig]) -> float:
+        """解析故障注入比例，支持环境变量覆盖。"""
+        env_value = os.getenv("SENSOR_FUZZ_FAULT_INJECTION_RATE")
+        raw_value: Any = env_value
+        if raw_value is None and cfg:
+            raw_value = cfg.strategy.get("fault_injection_rate", 0.0)
+        if raw_value is None:
+            return 0.0
+
+        try:
+            value = float(raw_value)
+        except (TypeError, ValueError):
+            self._logger.warning("Invalid fault injection rate %r, fallback to 0.0", raw_value)
+            return 0.0
+        return max(0.0, min(1.0, value))
+
+    def _maybe_inject_fault(self, result: Any, case: Dict[str, Any]) -> Any:
+        """按配置概率注入可观测异常，验证异常检测与处置路径。"""
+        if self._fault_injection_rate <= 0:
+            return result
+
+        category = str(case.get("category", "unknown")).strip().lower()
+        if self._fault_injection_categories and category not in self._fault_injection_categories:
+            return result
+        if self._fault_injection_rng.random() >= self._fault_injection_rate:
+            return result
+
+        if isinstance(result, dict):
+            injected = dict(result)
+        else:
+            injected = {"raw_result": result}
+        injected["success"] = False
+        injected.setdefault("error_code", 9001)
+        injected.setdefault("error", "simulated_fault_injection")
+        injected.setdefault("response_time", 0.0)
+        injected["fault_injected"] = True
+        injected["anomaly_source"] = "fault_injection"
+        injected["case_category"] = category
+        return injected
 
     def _resolve_concurrency_limit(self, cfg: Optional[FrameworkConfig]) -> int:
         """根据配置和 CPU 核数计算安全并发上限。"""
@@ -307,6 +355,7 @@ class ExecutionEngine:
         """Send a single case through the driver with per-case observability."""
         start = asyncio.get_running_loop().time()
         result = await driver.send(case["payload"])
+        result = self._maybe_inject_fault(result, case)
         duration = asyncio.get_running_loop().time() - start
         metrics.RESPONSE_TIME.labels(protocol=protocol, sensor_type=sensor_name).observe(
             duration
