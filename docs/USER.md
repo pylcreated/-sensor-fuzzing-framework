@@ -47,6 +47,28 @@ python -m sensor_fuzz
 ```
 默认加载 `config/config.yaml`，启动热重载与基础执行。
 
+## 研究实验流水线（论文复现）
+
+可通过以下方式启用统一实验流水线：
+
+```bash
+# 方式1：环境变量
+SENSOR_FUZZ_RESEARCH_PIPELINE=1 python -m sensor_fuzz
+```
+
+或在配置中设置：
+
+```yaml
+strategy:
+  research_pipeline: true
+  research_output: reports/experiments/latest.json
+```
+
+运行后将输出：
+
+- `reports/experiments/latest.json`（原始实验指标）
+- `reports/experiments/latest.md`（自动评分与结论报告）
+
 ## 测试流程
 1. 准备配置文件（协议、传感器、策略、SIL）。
 2. 启动 Prometheus 导出（内置 9000 端口）。

@@ -1,0 +1,37 @@
+{
+  "generated_at": "2026-02-18T06:45:16.208496+00:00",
+  "experiments": [
+    {
+      "name": "envsim_stability",
+      "metrics": {
+        "sample_count": 3,
+        "timeline_seconds": 4.5,
+        "temperature_span": 2.7161,
+        "max_vibration_amplitude": 0.9052
+      },
+      "notes": "Scenario replay with controlled Gaussian noise."
+    },
+    {
+      "name": "distributed_reliability",
+      "metrics": {
+        "tasks_total": 8,
+        "tasks_done": 8,
+        "tasks_failed": 0,
+        "tasks_recovered": 6,
+        "recovery_rate": 1.0
+      },
+      "notes": "Retry + stale requeue + idempotency path validation."
+    },
+    {
+      "name": "analysis_ablation",
+      "metrics": {
+        "sample_count": 3,
+        "critical_count": 1,
+        "mean_weighted_score": 0.5333,
+        "ablation_score_delta": 0.85,
+        "root_cause": "critical deadlock in i2c driver"
+      },
+      "notes": "Weighted severity with feature ablation and score-based root-cause."
+    }
+  ]
+}

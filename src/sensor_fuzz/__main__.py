@@ -18,6 +18,7 @@ from sensor_fuzz.config import ConfigLoader, ConfigReloader, ConfigVersionStore
 from sensor_fuzz.utils.logging import setup_logging
 from sensor_fuzz.sil_compliance import SILComplianceManager, SafetyIntegrityLevel
 from sensor_fuzz.monitoring import start_system_monitor, stop_system_monitor, start_exporter
+from sensor_fuzz.automation import run_research_pipeline, write_markdown_report
 
 
 class ApplicationError(Exception):
@@ -351,6 +352,35 @@ def main() -> NoReturn:
             if "metrics_exporter" in locals():
                 _update_dashboard(metrics_exporter, engine, cfg, app_started_at)
             _append_longrun_summary(engine, cfg, app_started_at, reason="initial-run")
+
+            # Optional research pipeline for paper-ready metrics
+            run_research = bool(cfg.strategy.get("research_pipeline", False)) or (
+                os.getenv("SENSOR_FUZZ_RESEARCH_PIPELINE", "0") == "1"
+            )
+            if run_research:
+                research_output = cfg.strategy.get(
+                    "research_output", "reports/experiments/latest.json"
+                )
+                try:
+                    research_summary = run_research_pipeline(research_output)
+                    research_md_output = cfg.strategy.get(
+                        "research_report_output", "reports/experiments/latest.md"
+                    )
+                    write_markdown_report(research_summary, research_md_output)
+                    engine.state["research_pipeline"] = {
+                        "enabled": True,
+                        "output": str(research_output),
+                        "report_output": str(research_md_output),
+                        "experiments": len(research_summary.get("experiments", [])),
+                    }
+                    logger.info(
+                        "Research pipeline reports generated: json=%s md=%s",
+                        research_output,
+                        research_md_output,
+                    )
+                except Exception as e:
+                    logger.warning("Research pipeline failed: %s", e)
+
             logger.info("Fuzzing completed successfully")
 
             # Perform SIL compliance validation

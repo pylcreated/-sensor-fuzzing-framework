@@ -1,7 +1,7 @@
 """模块说明：tests/test_analysis.py 的主要实现与辅助逻辑。"""
 
 from sensor_fuzz.analysis.cluster import cluster_anomalies, label_defects
-from sensor_fuzz.analysis.severity import classify
+from sensor_fuzz.analysis.severity import classify, score_defect
 from sensor_fuzz.analysis.report import render_html, export_pdf
 from sensor_fuzz.analysis.root_cause import locate_root_cause
 import pytest
@@ -126,3 +126,39 @@ def test_locate_root_cause_missing_desc():
 
     assert result["root_cause"] == "unknown"  # No valid desc found
     assert result["evidence"] == {"severity": "critical"}
+
+
+def test_severity_weighted_strategy():
+    """测试加权策略下严重度计算。"""
+    defect = {
+        "category": "safety",
+        "crash": True,
+        "resource_leak": True,
+        "exploitability": 0.9,
+    }
+    level = classify(defect, strategy="weighted")
+    assert level in {"severe", "critical"}
+
+
+def test_severity_score_with_ablation():
+    """测试特征消融会降低严重度分数。"""
+    defect = {"deadlock": True, "crash": True}
+    full = score_defect(defect)
+    ablated = score_defect(defect, ablation=["deadlock"])
+    assert full > ablated
+
+
+def test_root_cause_score_strategy_prefers_keyword_and_severity():
+    """测试评分策略优先选择高危关键词事件。"""
+    events = [
+        {"desc": "telemetry timeout", "severity": "medium"},
+        {"desc": "critical deadlock detected", "severity": "critical"},
+    ]
+    result = locate_root_cause(events, strategy="score")
+    assert result["root_cause"] == "critical deadlock detected"
+
+
+def test_root_cause_unknown_strategy_raises():
+    """测试未知策略会抛出异常。"""
+    with pytest.raises(ValueError):
+        locate_root_cause([], strategy="unknown")
